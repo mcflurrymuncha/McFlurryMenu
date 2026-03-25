@@ -2,7 +2,7 @@ using HarmonyLib;
 using System.Linq;
 using Sentry.Internal.Extensions;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(EngineerRole), nameof(EngineerRole.FixedUpdate))]
 public static class EngineerRole_FixedUpdate
