@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 using AmongUs.InnerNet.GameDataMessages;
 using Il2CppInterop.Runtime.Injection;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public static class Utils
 {
