@@ -4,8 +4,8 @@ using AmongUs.InnerNet.GameDataMessages;
 using UnityEngine;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
-namespace MalumMenu;
-public static class MalumCheats
+namespace McFlurryMenu;
+public static class McFlurryCheats
 {
     private static bool _isScanAnimActive;
     private static bool _isCamsAnimActive;
@@ -250,7 +250,7 @@ public static class MalumCheats
 
         if (Utils.isLobby)
         {
-            HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
+            HudManager.Instance.Notifier.AddDisconnectMessage("You can't kill in lobby. o-o");
         }
         else
         {
@@ -270,7 +270,7 @@ public static class MalumCheats
 
         if (Utils.isLobby)
         {
-            HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
+            HudManager.Instance.Notifier.AddDisconnectMessage("You can't kill in lobby. o-o");
         }
         else
         {
@@ -293,7 +293,7 @@ public static class MalumCheats
 
         if (Utils.isLobby)
         {
-            HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
+            HudManager.Instance.Notifier.AddDisconnectMessage("You can't kill in lobby. o-o");
         }
         else
         {
