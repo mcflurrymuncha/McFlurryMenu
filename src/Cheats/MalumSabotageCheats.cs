@@ -1,6 +1,6 @@
-namespace MalumMenu;
+namespace McFlurryMenu;
 
-public static class MalumSabotageCheats
+public static class McFlurrySabotageCheats
 {
     private static bool _reactorSab;
     private static bool _oxygenSab;
