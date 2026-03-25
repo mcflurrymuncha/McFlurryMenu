@@ -1,5 +1,5 @@
 <p align="center">
-  # McFlurryMenu
+  <t>McFlurryMenu</t>
 </p>
 <p align="center">
   <b>A Fork of MalumMenu, Made for my liking :3</b>
