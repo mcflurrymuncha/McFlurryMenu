@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Linq;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public static class ArrowHandler
 {
