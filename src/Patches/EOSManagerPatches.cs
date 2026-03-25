@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 // GuestMode cheats are commented out as they are broken in latest updates
 
