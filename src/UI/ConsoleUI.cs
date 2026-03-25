@@ -2,7 +2,7 @@ using Il2CppSystem;
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ConsoleUI : MonoBehaviour
 {
