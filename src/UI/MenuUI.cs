@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class MenuUI : MonoBehaviour
 {
@@ -23,8 +23,8 @@ public class MenuUI : MonoBehaviour
     {
         groups.Add(new GroupInfo("Player", false,
             new List<ToggleInfo>() {
-                new ToggleInfo(" NoClip", () => CheatToggles.noClip, x => CheatToggles.noClip = x),
-                new ToggleInfo(" Fake Revive", () => CheatToggles.fakeRevive, x => CheatToggles.fakeRevive = x),
+                new ToggleInfo(" Noclip", () => CheatToggles.noClip, x => CheatToggles.noClip = x),
+                new ToggleInfo(" Revive (Clientsided)", () => CheatToggles.fakeRevive, x => CheatToggles.fakeRevive = x),
                 new ToggleInfo(" Invert Controls", () => CheatToggles.invertControls, x => CheatToggles.invertControls = x)
             },
             new List<SubmenuInfo> {
