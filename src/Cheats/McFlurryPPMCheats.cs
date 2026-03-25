@@ -5,8 +5,8 @@ using AmongUs.GameOptions;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using UnityEngine;
 
-namespace MalumMenu;
-public static class MalumPPMCheats
+namespace McFlurryMenu;
+public static class McFlurryPPMCheats
 {
     private static bool _telekillPlayerActive;
     private static bool _killPlayerActive;
