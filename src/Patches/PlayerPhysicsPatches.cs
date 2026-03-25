@@ -2,7 +2,7 @@ using System;
 using HarmonyLib;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.LateUpdate))]
 public static class PlayerPhysics_LateUpdate
