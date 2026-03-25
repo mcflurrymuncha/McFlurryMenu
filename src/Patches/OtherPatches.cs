@@ -7,7 +7,7 @@ using System;
 using System.Security.Cryptography;
 using InnerNet;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(PlatformSpecificData), nameof(PlatformSpecificData.Serialize))]
 public static class PlatformSpecificData_Serialize
