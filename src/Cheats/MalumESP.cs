@@ -1,8 +1,8 @@
 using UnityEngine;
 using Sentry.Internal.Extensions;
 
-namespace MalumMenu;
-public static class MalumESP
+namespace McFlurryMenu;
+public static class McFlurryESP
 {
     private static bool _freecamActive;
     private static bool _resolutionChangeNeeded;
