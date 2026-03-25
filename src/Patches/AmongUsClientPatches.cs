@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.Update))]
 public static class AmongUsClient_Update
