@@ -1,7 +1,7 @@
 using AmongUs.Data;
 
-namespace MalumMenu;
-public static class MalumSpoof
+namespace McFlurryMenu;
+public static class McFlurrySpoof
 {
     public static void SpoofLevel()
     {
