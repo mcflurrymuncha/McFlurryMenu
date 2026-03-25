@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
 public static class PlayerControl_FixedUpdate
