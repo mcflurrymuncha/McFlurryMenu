@@ -1,7 +1,7 @@
 using UnityEngine;
 using Il2CppSystem.Collections.Generic;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ProtectUI : MonoBehaviour
 {
