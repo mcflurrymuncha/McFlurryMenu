@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class TasksUI : MonoBehaviour
 {
