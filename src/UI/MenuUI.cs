@@ -39,13 +39,13 @@ public class MenuUI : MonoBehaviour
 
         groups.Add(new GroupInfo("ESP", false,
             new List<ToggleInfo>() {
-                new ToggleInfo(" Show Player Info", () => CheatToggles.showPlayerInfo, x => CheatToggles.showPlayerInfo = x),
+                new ToggleInfo(" See Player Info", () => CheatToggles.showPlayerInfo, x => CheatToggles.showPlayerInfo = x),
                 new ToggleInfo(" See Roles", () => CheatToggles.seeRoles, x => CheatToggles.seeRoles = x),
                 new ToggleInfo(" See Ghosts", () => CheatToggles.seeGhosts, x => CheatToggles.seeGhosts = x),
                 new ToggleInfo(" No Shadows", () => CheatToggles.fullBright, x => CheatToggles.fullBright = x),
                 new ToggleInfo(" Task Arrows", () => CheatToggles.taskArrows, x => CheatToggles.taskArrows = x),
                 new ToggleInfo(" Reveal Votes", () => CheatToggles.revealVotes, x => CheatToggles.revealVotes = x),
-                new ToggleInfo(" Show Lobby Info", () => CheatToggles.showLobbyInfo, x => CheatToggles.showLobbyInfo = x),
+                new ToggleInfo(" See Lobby Info", () => CheatToggles.showLobbyInfo, x => CheatToggles.showLobbyInfo = x),
             },
             new List<SubmenuInfo> {
                 new SubmenuInfo("Camera", false,
@@ -204,7 +204,8 @@ public class MenuUI : MonoBehaviour
                         new ToggleInfo(" Kill All Crewmates", () => CheatToggles.killAllCrew, x => CheatToggles.killAllCrew = x),
                         new ToggleInfo(" Kill All Impostors", () => CheatToggles.killAllImps, x => CheatToggles.killAllImps = x),
                         new ToggleInfo(" Kill Everyone", () => CheatToggles.killAll, x => CheatToggles.killAll = x)
-                    }),
+                    }
+                ),
                 new SubmenuInfo("Game State", false,
                     new List<ToggleInfo>() {
                         new ToggleInfo(" Force Start Game", () => CheatToggles.forceStartGame, x => CheatToggles.forceStartGame = x),
