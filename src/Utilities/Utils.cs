@@ -448,7 +448,7 @@ public static class Utils
         var level = playerInfo.PlayerLevel + 1;
 
         var platform = "Unknown";
-        try { platform = PlatformTypeToString(player.PlatformData.Platform); } catch { }
+        if (!isLocalGame) try { platform = PlatformTypeToString(player.PlatformData.Platform); } catch { }
 
         //var puid = player.ProductUserId;
         //var friendcode = player.FriendCode;
