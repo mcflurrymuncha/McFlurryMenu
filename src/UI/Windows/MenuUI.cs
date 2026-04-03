@@ -76,6 +76,24 @@ public class MenuUI : MonoBehaviour
         var stamp = ModManager.Instance.ModStamp;
         if (stamp) stamp.enabled = !(MalumMenu.inStealthMode || MalumMenu.isPanicked);
 
+        if (CheatToggles.reloadConfig)
+        {
+            MalumMenu.Plugin.Config.Reload();
+            CheatToggles.reloadConfig = false;
+        }
+
+        if (CheatToggles.saveProfile)
+        {
+            CheatToggles.SaveTogglesToProfile();
+            CheatToggles.saveProfile = false;
+        }
+
+        if (CheatToggles.loadProfile)
+        {
+            CheatToggles.LoadTogglesFromProfile();
+            CheatToggles.loadProfile = false;
+        }
+
         // Some cheats only work if the LocalPlayer exists, so they are turned off if it does not
         if(!Utils.isPlayer)
         {
