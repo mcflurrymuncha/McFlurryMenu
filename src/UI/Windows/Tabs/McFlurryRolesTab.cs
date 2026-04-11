@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class RolesTab : ITab
 {
@@ -10,6 +10,7 @@ public class RolesTab : ITab
     {
         GUILayout.BeginHorizontal();
 
+        // Left Column: General, Impostor, SS, Crewmate, and Tracker
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -32,6 +33,7 @@ public class RolesTab : ITab
 
         GUILayout.EndVertical();
 
+        // Right Column: Engineer, Scientist, and Detective
         GUILayout.BeginVertical();
 
         DrawEngineer();
