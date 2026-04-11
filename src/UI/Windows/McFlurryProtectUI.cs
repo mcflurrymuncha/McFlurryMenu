@@ -1,7 +1,7 @@
-using UnityEngine;
 using Il2CppSystem.Collections.Generic;
+using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ProtectUI : MonoBehaviour
 {
@@ -12,11 +12,12 @@ public class ProtectUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showProtectMenu || !MenuUI.isGUIActive || MalumMenu.isPanicked) return;
+        // Safety checks using rebranded McFlurryPlugin and MenuUI logic
+        if (!CheatToggles.showProtectMenu || !MenuUI.isGUIActive || McFlurryPlugin.isPanicked) return;
 
         UIHelpers.ApplyUIColor();
 
-        _windowRect = GUI.Window((int)WindowId.ProtectUI, _windowRect, (GUI.WindowFunction)ProtectWindow, "Protect Players");
+        _windowRect = GUI.Window((int)WindowId.ProtectUI, _windowRect, (GUI.WindowFunction)ProtectWindow, "McFlurry Protection");
     }
 
     private void ProtectWindow(int windowID)
@@ -27,20 +28,22 @@ public class ProtectUI : MonoBehaviour
 
         foreach (var player in PlayerControl.AllPlayerControls)
         {
+            // Data validation to prevent null reference errors on disconnected or uninitialized players
             if (!player.Data || !player.Data.Role || string.IsNullOrEmpty(player.Data.PlayerName))
             {
-                if (playersToProtect.Contains(player))  // Ensure to remove invalid players from the list
+                if (playersToProtect.Contains(player))
                 {
                     playersToProtect.Remove(player);
                 }
-
                 continue;
             }
 
             GUILayout.BeginHorizontal();
 
+            // Display player name in their actual character color
             GUILayout.Label($"<color=#{ColorUtility.ToHtmlStringRGB(player.Data.Color)}>{player.Data.PlayerName}</color>", GUILayout.Width(140f));
 
+            // Status label for shield state
             if (player.protectedByGuardianId == -1)
             {
                 GUILayout.Label("<color=#FF0000>Unprotected</color>", GUILayout.Width(135));
@@ -51,11 +54,13 @@ public class ProtectUI : MonoBehaviour
                 GUILayout.Label($"<color=#00FF00>Protected</color> by <color=#{ColorUtility.ToHtmlStringRGB(guardianInfo.Color)}>{guardianInfo._object.Data.PlayerName}</color>", GUILayout.Width(135));
             }
 
+            // Immediate RPC protect (Requires Host)
             if (GUILayout.Button("Protect", GUIStylePreset.NormalButton) && Utils.isHost && !Utils.isLobby)
             {
                 PlayerControl.LocalPlayer.RpcProtectPlayer(player, player.cosmetics.ColorId);
             }
 
+            // Persistent protection toggle
             var keepProtected = playersToProtect.Contains(player);
             keepProtected = GUILayout.Toggle(keepProtected, "Keep protected", GUIStylePreset.NormalToggle);
 
@@ -75,6 +80,7 @@ public class ProtectUI : MonoBehaviour
 
         GUILayout.BeginHorizontal();
 
+        // Mass protection controls
         if (GUILayout.Button("Protect Everyone") && Utils.isHost && !Utils.isLobby)
         {
             foreach (var player in PlayerControl.AllPlayerControls)
@@ -99,14 +105,14 @@ public class ProtectUI : MonoBehaviour
         }
         else
         {
-            if (PlayerControl.AllPlayerControls.Count == playersToProtect.Count)  // Only clear the list if all players were being kept protected
+            // Reset logic for the mass-protect toggle
+            if (PlayerControl.AllPlayerControls.Count == playersToProtect.Count)
             {
                 playersToProtect.Clear();
             }
         }
 
         GUILayout.EndHorizontal();
-
         GUILayout.EndVertical();
 
         GUI.DragWindow();
