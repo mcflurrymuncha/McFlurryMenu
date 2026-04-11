@@ -1,7 +1,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.ShowNormalMap))]
 public static class MapBehaviour_ShowNormalMap
@@ -9,9 +9,9 @@ public static class MapBehaviour_ShowNormalMap
     // Postfix patch of MapBehaviour.ShowNormalMap to spawn herePoint icons for each player
     public static void Postfix(MapBehaviour __instance)
     {
-        MinimapHandler.minimapActive = MinimapHandler.IsCheatEnabled();
+        McFlurryMinimapHandler.minimapActive = McFlurryMinimapHandler.IsCheatEnabled();
 
-        if (!MinimapHandler.minimapActive)
+        if (!McFlurryMinimapHandler.minimapActive)
         {
             return; // Only runs if miniMap Cheat is enabled
         }
@@ -23,8 +23,8 @@ public static class MapBehaviour_ShowNormalMap
         // Destroy old player icons (herePoints)
         try
         {
-            MinimapHandler.herePoints.ForEach(x => UnityEngine.Object.Destroy(x.sprite.gameObject));
-            MinimapHandler.herePoints.Clear();
+            McFlurryMinimapHandler.herePoints.ForEach(x => UnityEngine.Object.Destroy(x.sprite.gameObject));
+            McFlurryMinimapHandler.herePoints.Clear();
         }
         catch { }
 
@@ -39,8 +39,7 @@ public static class MapBehaviour_ShowNormalMap
                 temp.Add(new HerePoint(player, herePoint));
             }
         }
-        MinimapHandler.herePoints = temp;
-
+        McFlurryMinimapHandler.herePoints = temp;
     }
 }
 
@@ -51,7 +50,7 @@ public static class MapBehaviour_FixedUpdate
     public static void Postfix(MapBehaviour __instance)
     {
         // Reset map if miniMap cheat is disabled
-        if (MinimapHandler.IsCheatEnabled() != MinimapHandler.minimapActive)
+        if (McFlurryMinimapHandler.IsCheatEnabled() != McFlurryMinimapHandler.minimapActive)
         {
             if (!__instance.infectedOverlay.gameObject.active) // Do not affect sabotage map
             {
@@ -61,17 +60,16 @@ public static class MapBehaviour_FixedUpdate
         }
 
         // Properly handles each herePoint icon on the map
-        var temp = MinimapHandler.herePoints;
+        var temp = McFlurryMinimapHandler.herePoints;
         foreach (var herePoint in temp)
         {
-            MinimapHandler.HandleHerePoint(herePoint);
+            McFlurryMinimapHandler.HandleHerePoint(herePoint);
         }
 
-        foreach (var herePoint in MinimapHandler.herePointsToRemove)
+        foreach (var herePoint in McFlurryMinimapHandler.herePointsToRemove)
         {
-            MinimapHandler.herePoints.Remove(herePoint);
+            McFlurryMinimapHandler.herePoints.Remove(herePoint);
         }
-
     }
 }
 
@@ -83,8 +81,8 @@ public static class MapBehaviour_Close
     {
         try
         {
-            MinimapHandler.herePoints.ForEach(x => UnityEngine.Object.Destroy(x.sprite.gameObject));
-            MinimapHandler.herePoints.Clear();
+            McFlurryMinimapHandler.herePoints.ForEach(x => UnityEngine.Object.Destroy(x.sprite.gameObject));
+            McFlurryMinimapHandler.herePoints.Clear();
         }
         catch { }
     }
