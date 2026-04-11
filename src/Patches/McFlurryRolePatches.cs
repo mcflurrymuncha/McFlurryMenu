@@ -2,7 +2,7 @@ using HarmonyLib;
 using System.Linq;
 using Sentry.Internal.Extensions;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(EngineerRole), nameof(EngineerRole.FixedUpdate))]
 public static class EngineerRole_FixedUpdate
@@ -11,7 +11,7 @@ public static class EngineerRole_FixedUpdate
     {
         if(__instance.Player.AmOwner)
         {
-            MalumCheats.HandleEngineerCheats(__instance);
+            McFlurryCheats.HandleEngineerCheats(__instance);
         }
     }
 }
@@ -25,7 +25,7 @@ public static class ShapeshifterRole_FixedUpdate
         {
             if(__instance.Player.AmOwner)
             {
-                MalumCheats.HandleShapeshifterCheats(__instance);
+                McFlurryCheats.HandleShapeshifterCheats(__instance);
             }
         } catch { }
     }
@@ -38,7 +38,7 @@ public static class ScientistRole_Update
     {
         if(__instance.Player.AmOwner)
         {
-            MalumCheats.HandleScientistCheats(__instance);
+            McFlurryCheats.HandleScientistCheats(__instance);
         }
     }
 }
@@ -50,7 +50,7 @@ public static class TrackerRole_FixedUpdate
     {
         if(__instance.Player.AmOwner)
         {
-            MalumCheats.HandleTrackerCheats(__instance);
+            McFlurryCheats.HandleTrackerCheats(__instance);
         }
     }
 }
@@ -72,12 +72,11 @@ public static class PhantomRole_IsValidTarget
 public static class ImpostorRole_IsValidTarget
 {
     // Postfix patch of ImpostorRole.IsValidTarget to allow forbidden kill targets for killAnyone cheat
-    // Allows killing ghosts (with seeGhosts), impostors, players in vents, etc...
     public static void Postfix(NetworkedPlayerInfo target, ref bool __result)
     {
         if (CheatToggles.killAnyone)
         {
-           __result = Utils.IsValidTarget(target);
+            __result = Utils.IsValidTarget(target);
         }
     }
 }
