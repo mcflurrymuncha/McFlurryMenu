@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MalumMenu;
-public static class MinimapHandler
+namespace McFlurryMenu;
+
+public static class McFlurryMinimapHandler
 {
     public static bool minimapActive;
     public static List<HerePoint> herePoints = new List<HerePoint>();
@@ -19,7 +20,7 @@ public static class MinimapHandler
 
         try // try-catch to fix issues caused by player disconnection
         {
-            herePoint.sprite.gameObject.SetActive(false); // Initally make player icon invisible
+            herePoint.sprite.gameObject.SetActive(false); // Initially make player icon invisible
 
             // Crewmate, alive
             if (CheatToggles.mapCrew && !herePoint.player.Data.Role.IsImpostor)
@@ -53,6 +54,7 @@ public static class MinimapHandler
                     }
                 }
             }
+            
             // Any Role, dead
             if (CheatToggles.mapGhosts && herePoint.player.Data.IsDead)
             {
