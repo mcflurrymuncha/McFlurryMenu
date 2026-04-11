@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(VoteBanSystem), nameof(VoteBanSystem.AddVote))]
 public static class VoteBanSystem_AddVote
@@ -10,6 +10,7 @@ public static class VoteBanSystem_AddVote
     {
         if (!Utils.isHost) return true;
 
+        // If the vote source is the local host, execute an immediate kick
         if (AmongUsClient.Instance.ClientId == srcClient)
         {
             AmongUsClient.Instance.KickPlayer(clientId, false);
@@ -22,7 +23,8 @@ public static class VoteBanSystem_AddVote
 [HarmonyPatch(typeof(VoteBanSystem), nameof(VoteBanSystem.CmdAddVote))]
 public static class VoteBanSystem_CmdAddVote
 {
-    // Prefix patch of VoteBanSystem.CmdAddVote to prevent AddVoteBan RPC from being sent when host votes to kick a player
+    // Prefix patch to prevent the AddVoteBan RPC from being sent when host votes to kick a player
+    // This avoids double-processing since we handle it locally in the AddVote prefix
     public static bool Prefix()
     {
         return !Utils.isHost;
