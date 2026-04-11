@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class PassiveTab : ITab
 {
@@ -8,6 +8,7 @@ public class PassiveTab : ITab
 
     public void Draw()
     {
+        // Aligned with the McFlurry Menu layout standards
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -17,6 +18,7 @@ public class PassiveTab : ITab
 
     private void DrawGeneral()
     {
+        // Background modifications and quality-of-life toggles
         CheatToggles.freeCosmetics = GUILayout.Toggle(CheatToggles.freeCosmetics, " Free Cosmetics");
 
         CheatToggles.avoidPenalties = GUILayout.Toggle(CheatToggles.avoidPenalties, " Avoid Penalties");
