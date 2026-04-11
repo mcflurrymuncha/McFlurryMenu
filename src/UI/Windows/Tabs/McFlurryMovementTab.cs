@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class MovementTab : ITab
 {
@@ -9,6 +9,7 @@ public class MovementTab : ITab
 
     public void Draw()
     {
+        // Maintains the standard McFlurry Menu column width
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -22,12 +23,14 @@ public class MovementTab : ITab
 
     private void DrawGeneral()
     {
+        // Core movement bypasses
         CheatToggles.noClip = GUILayout.Toggle(CheatToggles.noClip, " NoClip");
 
         CheatToggles.invertControls = GUILayout.Toggle(CheatToggles.invertControls, " Invert Controls");
 
         try
         {
+            // Dynamic Speed Slider based on player state (Alive vs Ghost)
             if (PlayerControl.LocalPlayer.Data.IsDead)
             {
                 PlayerControl.LocalPlayer.MyPhysics.GhostSpeed = GUILayout.HorizontalSlider(PlayerControl.LocalPlayer.MyPhysics.GhostSpeed, 0f, 20f, GUILayout.Width(250f));
@@ -40,13 +43,18 @@ public class MovementTab : ITab
                 Utils.SnapSpeedToDefault(0.05f);
                 GUILayout.Label($"Current Speed: {PlayerControl.LocalPlayer?.MyPhysics.Speed} {(Utils.IsSpeedDefault() ? "(Default)" : "")}");
             }
-        } catch (NullReferenceException) {}
+        } 
+        catch (NullReferenceException) 
+        {
+            // Silently fail if player isn't in a game state yet
+        }
     }
 
     private void DrawTeleport()
     {
         GUILayout.Label("Teleport", GUIStylePreset.TabSubtitle);
 
+        // Targeted movement options
         CheatToggles.teleportCursor = GUILayout.Toggle(CheatToggles.teleportCursor, " to Cursor");
 
         CheatToggles.teleportPlayer = GUILayout.Toggle(CheatToggles.teleportPlayer, " to Player");
