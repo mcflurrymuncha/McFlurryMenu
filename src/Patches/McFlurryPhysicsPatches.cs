@@ -2,37 +2,41 @@ using System;
 using HarmonyLib;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.LateUpdate))]
 public static class PlayerPhysics_LateUpdate
 {
     public static void Postfix(PlayerPhysics __instance)
     {
-        MalumESP.PlayerNametags(__instance);
-        MalumESP.SeeGhostsCheat(__instance);
+        // ESP and Visuals
+        McFlurryESP.PlayerNametags(__instance);
+        McFlurryESP.SeeGhostsCheat(__instance);
 
-        MalumCheats.NoClipCheat();
-        MalumCheats.ReviveCheat();
-        MalumCheats.ProtectCheat();
-        MalumCheats.KillAllCheat();
-        MalumCheats.KillAllCrewCheat();
-        MalumCheats.KillAllImpsCheat();
-        MalumCheats.ForceStartGameCheat();
-        MalumCheats.TeleportCursorCheat();
-        MalumCheats.CompleteMyTasksCheat();
-        MalumCheats.PlayAnimationCheat();
-        MalumCheats.PlayScannerCheat();
+        // General Cheats
+        McFlurryCheats.NoClipCheat();
+        McFlurryCheats.ReviveCheat();
+        McFlurryCheats.ProtectCheat();
+        McFlurryCheats.KillAllCheat();
+        McFlurryCheats.KillAllCrewCheat();
+        McFlurryCheats.KillAllImpsCheat();
+        McFlurryCheats.ForceStartGameCheat();
+        McFlurryCheats.TeleportCursorCheat();
+        McFlurryCheats.CompleteMyTasksCheat();
+        McFlurryCheats.PlayAnimationCheat();
+        McFlurryCheats.PlayScannerCheat();
 
-        MalumPPMCheats.EjectPlayerPPM();
-        MalumPPMCheats.SpectatePPM();
-        MalumPPMCheats.KillPlayerPPM();
-        MalumPPMCheats.TelekillPlayerPPM();
-        MalumPPMCheats.TeleportPlayerPPM();
-        MalumPPMCheats.ChangeRolePPM();
-        MalumPPMCheats.ForceRolePPM();
+        // Player Pick Menu (PPM) Cheats
+        McFlurryPPMCheats.EjectPlayerPPM();
+        McFlurryPPMCheats.SpectatePPM();
+        McFlurryPPMCheats.KillPlayerPPM();
+        McFlurryPPMCheats.TelekillPlayerPPM();
+        McFlurryPPMCheats.TeleportPlayerPPM();
+        McFlurryPPMCheats.ChangeRolePPM();
+        McFlurryPPMCheats.ForceRolePPM();
 
-        TracersHandler.DrawPlayerTracer(__instance);
+        // Tracers
+        McFlurryTracersHandler.DrawPlayerTracer(__instance);
 
         GameObject[] bodyObjects = GameObject.FindGameObjectsWithTag("DeadBody");
         foreach(GameObject bodyObject in bodyObjects) // Finds and loops through all dead bodies
@@ -40,9 +44,10 @@ public static class PlayerPhysics_LateUpdate
             DeadBody deadBody = bodyObject.GetComponent<DeadBody>();
 
             if (!deadBody || deadBody.Reported) continue;  // Only draw tracers for unreported dead bodies
-            TracersHandler.DrawBodyTracer(deadBody);
+            McFlurryTracersHandler.DrawBodyTracer(deadBody);
         }
 
+        // Control Logic
         try
         {
             if (CheatToggles.invertControls)
@@ -55,20 +60,20 @@ public static class PlayerPhysics_LateUpdate
                 PlayerControl.LocalPlayer.MyPhysics.Speed = Mathf.Abs(PlayerControl.LocalPlayer.MyPhysics.Speed);
                 PlayerControl.LocalPlayer.MyPhysics.GhostSpeed = Mathf.Abs(PlayerControl.LocalPlayer.MyPhysics.GhostSpeed);
             }
-        } catch (NullReferenceException) { }
+        } 
+        catch (NullReferenceException) { }
     }
 }
 
 [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.HandleAnimation))]
 public static class PlayerPhysics_HandleAnimation
 {
-    // Prefix patch of PlayerPhysics.HandleAnimation to disable walking animation
+    // Prefix patch of PlayerPhysics.HandleAnimation to disable walking animation for Moonwalk
     public static bool Prefix(PlayerPhysics __instance)
     {
         if (CheatToggles.moonWalk && __instance.AmOwner)
         {
             __instance.ResetAnimState();
-
             return false;
         }
 
