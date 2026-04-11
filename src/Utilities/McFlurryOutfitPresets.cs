@@ -1,4 +1,4 @@
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public static class OutfitPreset
 {
