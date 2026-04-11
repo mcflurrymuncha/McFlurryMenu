@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(LogicOptions), nameof(LogicOptions.GetAnonymousVotes))]
 public static class LogicOptions_GetAnonymousVotes
