@@ -2,12 +2,12 @@ using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.Update))]
 public static class TextBoxTMP_Update
 {
-    // Postfix patch of TextBoxTMP.Update to allow copying, pasting and cutting text between the chatbox and the device's clipboard
+    // Postfix patch of TextBoxTMP.Update to allow copying, pasting and cutting text
     public static void Postfix(TextBoxTMP __instance)
     {
         if (!CheatToggles.unlockClipboard || !__instance.hasFocus) return;
@@ -44,9 +44,7 @@ public static class TextBoxTMP_IsCharAllowed
     // Prefix patch of TextBoxTMP.IsCharAllowed to unlock extra characters
     public static bool Prefix(TextBoxTMP __instance, ref bool __result)
     {
-        // If user is writing through IME composition, then always allow the inputted characters
-        // Fixes issues for users of CJK languages
-
+        // If user is writing through IME composition (CJK languages), always allow
         string compositionString = Input.compositionString;
         if (compositionString.Length > 0)
         {
@@ -57,26 +55,20 @@ public static class TextBoxTMP_IsCharAllowed
         // If the user pasted text, read from clipboard. Otherwise use typed input
         var input = Utils.isPastingInput ? GUIUtility.systemCopyBuffer : Input.inputString;
 
-        // Allow all characters if there is no user input, as validation is not needed then
+        // Allow all characters if there is no user input
         if (input.Length == 0)
         {
             __result = true;
             return false;
         }
 
-        // Reconstruct the full string being processed by TextBoxTMP.SetText
-
+        // Reconstruct the full string being processed
         string currentText = __instance.text ?? string.Empty;
-
         int caretPos = Mathf.Clamp(__instance.caretPos, 0, currentText.Length);
-
         string text = currentText.Insert(caretPos, input);
 
-        // Get character that is currently being checked by keeping track
-        // of each TextBoxTMP.IsCharAllowed call made within TextBoxTMP.SetText foreach loop
-
+        // Track current character position in the loop
         _currentCharPos = Mathf.Clamp(_currentCharPos, 0, text.Length - 1);
-
         char currentChar = text[_currentCharPos];
 
         if (_currentCharPos >= text.Length - 1)
@@ -85,12 +77,12 @@ public static class TextBoxTMP_IsCharAllowed
         }
         else
         {
-            _currentCharPos++; // Increment position to next character in loop
+            _currentCharPos++; // Increment position to next character
         }
 
         if (CheatToggles.unlockCharacters)
         {
-            // Blocked characters to avoid breaking text input / getting kicked by anticheat
+            // Blocked characters to avoid breaking text input or getting kicked
             HashSet<char> blockedSymbols = new() { '\b', '\r', '>', '<', '[' };
 
             if (blockedSymbols.Contains(currentChar))
