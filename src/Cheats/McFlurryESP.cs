@@ -1,17 +1,18 @@
 using UnityEngine;
 using Sentry.Internal.Extensions;
 
-namespace MalumMenu;
-public static class MalumESP
+namespace McFlurryMenu;
+
+public static class McFlurryESP
 {
     private static bool _freecamActive;
     private static bool _resolutionChangeNeeded;
+
     public static void SporeCloudVision(Mushroom mushroom)
     {
         if (CheatToggles.noShadows)
         {
             // Change the Z axis position of spore clouds as to make players appear above them
-
             mushroom.sporeMask.transform.position = new Vector3(mushroom.sporeMask.transform.position.x, mushroom.sporeMask.transform.position.y, -1);
             return;
         }
@@ -24,7 +25,6 @@ public static class MalumESP
     {
         // Fullbright is automatically activated when zooming out, spectating other players, or "freecamming"
         // This is done to avoid issues with shadows
-
         return CheatToggles.noShadows || Camera.main.orthographicSize > 3f || Camera.main.gameObject.GetComponent<FollowerCamera>().Target != PlayerControl.LocalPlayer;
     }
 
@@ -39,17 +39,13 @@ public static class MalumESP
 
             if (Input.GetAxis("Mouse ScrollWheel") < 0f ) // Zoom out
             {
-
                 // Both the main camera and the UI camera need to be adjusted
-
                 Camera.main.orthographicSize++;
                 hudManager.UICamera.orthographicSize++;
 
                 // Utils.AdjustResolution() seems to be needed to properly sync the game's UI
                 // after a change in orthographicSize
-
                 Utils.AdjustResolution();
-
             }
             else if (Input.GetAxis("Mouse ScrollWheel") > 0f )
             {
@@ -104,7 +100,7 @@ public static class MalumESP
                 }
                 else
                 {
-                    // Reset the position and scale of the nametag to default values (they're kinda weird but whatever)
+                    // Reset the position and scale of the nametag to default values
                     playerState.NameText.transform.localPosition = new Vector3(0.3384f, 0.0311f, -0.1f);
                     playerState.NameText.transform.localScale = new Vector3(0.9f, 1f, 1f);
                 }
@@ -151,12 +147,10 @@ public static class MalumESP
     public static void SeeGhostsCheat(PlayerPhysics playerPhysics)
     {
         try{
-
             if(playerPhysics.myPlayer.Data.IsDead && !PlayerControl.LocalPlayer.Data.IsDead)
             {
                 playerPhysics.myPlayer.Visible = CheatToggles.seeGhosts;
             }
-
         }catch{}
     }
 
@@ -167,12 +161,9 @@ public static class MalumESP
             // Completely disable FollowerCamera
             if (!_freecamActive)
             {
-
                 Camera.main.gameObject.GetComponent<FollowerCamera>().enabled = false;
                 Camera.main.gameObject.GetComponent<FollowerCamera>().Target = null;
-
                 _freecamActive = true;
-
             }
 
             // Prevent the player from moving while in freecam
@@ -182,9 +173,7 @@ public static class MalumESP
             var movement = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0.0f);
 
             // Change the camera's position depending on the keyboard input
-            // Speed: 10f
             Camera.main.transform.position = Camera.main.transform.position + movement * 10f * Time.deltaTime;
-
         }
         else
         {
