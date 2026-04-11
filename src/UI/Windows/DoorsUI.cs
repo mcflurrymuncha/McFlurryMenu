@@ -1,7 +1,7 @@
 using UnityEngine;
 using Il2CppSystem.Collections.Generic;
 
-namespace MalumMenu;
+namespace McFlurryMenu; // Updated namespace
 
 public class DoorsUI : MonoBehaviour
 {
@@ -11,7 +11,8 @@ public class DoorsUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showDoorsMenu || !MenuUI.isGUIActive || MalumMenu.isPanicked) return;
+        // Reference McFlurryPlugin instead of MalumMenu
+        if (!CheatToggles.showDoorsMenu || !MenuUI.isGUIActive || McFlurryPlugin.isPanicked) return;
 
         UIHelpers.ApplyUIColor();
 
