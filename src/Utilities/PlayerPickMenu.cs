@@ -2,7 +2,8 @@ using UnityEngine;
 using Il2CppSystem.Collections.Generic;
 using Sentry.Internal.Extensions;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
+
 public static class PlayerPickMenu
 {
     public static ShapeshifterMinigame playerpickMenu;
@@ -11,35 +12,33 @@ public static class PlayerPickMenu
     public static Il2CppSystem.Action customAction;
     public static List<NetworkedPlayerInfo> customPlayerList;
 
-    // Get ShapeshifterMenu prefab to instantiate it
-    // Found here: https://github.com/AlchlcDvl/TownOfUsReworked/blob/9f3cede9d30bab2c11eb7c960007ab3979f09156/TownOfUsReworked/Custom/Menu.cs
+    // Fetch the native ShapeshifterMenu prefab to repurpose it for McFlurry targeted actions
     public static ShapeshifterMinigame GetShapeshifterMenu()
     {
         var rolePrefab = Utils.GetBehaviourByRoleType(AmongUs.GameOptions.RoleTypes.Shapeshifter);
         return Object.Instantiate(rolePrefab?.Cast<ShapeshifterRole>(), GameData.Instance.transform).ShapeshifterMenu;
     }
 
-    // Open a PlayerPickMenu to pick a specific player to target
+    // Opens the targeted UI to pick a specific player for host actions (Kill, Teleport, etc.)
     public static void OpenPlayerPickMenu(List<NetworkedPlayerInfo> playerList, Il2CppSystem.Action action)
     {
         isActive = true;
         customPlayerList = playerList;
         customAction = action;
 
-        // The menu is based off the shapeshifting menu
+        // Instantiate the picker onto the main camera for immediate visibility
         playerpickMenu = Object.Instantiate(GetShapeshifterMenu(), Camera.main.transform, false);
 
         playerpickMenu.transform.localPosition = new Vector3(0f, 0f, -50f);
-		playerpickMenu.Begin(null);
+        playerpickMenu.Begin(null);
     }
 
-    // Returns a custom NetworkedPlayerInfo that can be used as a PPM choice
+    // Creates a spoofed NetworkedPlayerInfo to add custom entries (like "All Players") to the UI
     public static NetworkedPlayerInfo CustomPPMChoice(string name, NetworkedPlayerInfo.PlayerOutfit outfit, RoleBehaviour role = null)
     {
         NetworkedPlayerInfo customChoice = Object.Instantiate<NetworkedPlayerInfo>(GameData.Instance.PlayerInfoPrefab);
 
         outfit.PlayerName = name;
-
         customChoice.Outfits[PlayerOutfitType.Default] = outfit;
 
         if (!role.IsNull())
