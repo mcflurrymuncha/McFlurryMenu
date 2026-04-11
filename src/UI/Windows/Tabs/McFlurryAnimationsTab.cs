@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class AnimationsTab : ITab
 {
@@ -8,6 +8,7 @@ public class AnimationsTab : ITab
 
     public void Draw()
     {
+        // Layout based on the main McFlurry Menu width
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -21,14 +22,11 @@ public class AnimationsTab : ITab
 
     private void DrawGeneral()
     {
+        // Visual task and world animations
         CheatToggles.animShields = GUILayout.Toggle(CheatToggles.animShields, " Shields");
-
         CheatToggles.animAsteroids = GUILayout.Toggle(CheatToggles.animAsteroids, " Asteroids");
-
         CheatToggles.animEmptyGarbage = GUILayout.Toggle(CheatToggles.animEmptyGarbage, " Empty Garbage");
-
         CheatToggles.animMedScan = GUILayout.Toggle(CheatToggles.animMedScan, " Medbay Scan");
-
         CheatToggles.animCamsInUse = GUILayout.Toggle(CheatToggles.animCamsInUse, " Cams In Use");
 
         // CheatToggles.animPet = GUILayout.Toggle(CheatToggles.animPet, " Pet");
@@ -38,6 +36,7 @@ public class AnimationsTab : ITab
     {
         GUILayout.Label("Client-Sided", GUIStylePreset.TabSubtitle);
 
+        // Movement animation overrides
         CheatToggles.moonWalk = GUILayout.Toggle(CheatToggles.moonWalk, " Moonwalk");
     }
 }
