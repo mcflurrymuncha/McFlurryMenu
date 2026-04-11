@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ChatTab : ITab
 {
@@ -8,6 +8,7 @@ public class ChatTab : ITab
 
     public void Draw()
     {
+        // Maintains the signature McFlurry Menu column width
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -21,6 +22,7 @@ public class ChatTab : ITab
 
     private void DrawGeneral()
     {
+        // Global chat permissions and network bypasses
         CheatToggles.enableChat = GUILayout.Toggle(CheatToggles.enableChat, " Enable Chat");
 
         CheatToggles.bypassUrlBlock = GUILayout.Toggle(CheatToggles.bypassUrlBlock, " Bypass URL Block");
@@ -32,6 +34,7 @@ public class ChatTab : ITab
     {
         GUILayout.Label("Textbox", GUIStylePreset.TabSubtitle);
 
+        // Input-specific enhancements
         CheatToggles.unlockCharacters = GUILayout.Toggle(CheatToggles.unlockCharacters, " Unlock Extra Characters");
 
         CheatToggles.longerMessages = GUILayout.Toggle(CheatToggles.longerMessages, " Allow Longer Messages");
