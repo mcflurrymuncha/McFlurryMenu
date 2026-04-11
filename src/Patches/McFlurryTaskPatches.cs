@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(NormalPlayerTask), nameof(NormalPlayerTask.Initialize))]
 public static class NormalPlayerTask_Initialize
@@ -29,15 +29,15 @@ public static class NormalPlayerTask_Initialize
             }
         }
 
-        ArrowHandler.EnsureArrowExists(__instance);
+        McFlurryArrowHandler.EnsureArrowExists(__instance);
 
-        if (!ArrowHandler.NeedsSpecialTarget(__instance))
+        if (!McFlurryArrowHandler.NeedsSpecialTarget(__instance))
         {
             __instance.UpdateArrowAndLocation();
         }
-        else if (ArrowHandler.IsOwnedAndIncomplete(__instance))
+        else if (McFlurryArrowHandler.IsOwnedAndIncomplete(__instance))
         {
-            ArrowHandler.SetArrowTargetForSpecialTasks(__instance);
+            McFlurryArrowHandler.SetArrowTargetForSpecialTasks(__instance);
         }
     }
 }
@@ -61,11 +61,11 @@ public static class NormalPlayerTask_FixedUpdate
             return;
         }
 
-        if (ArrowHandler.IsOwnedAndIncomplete(__instance))
+        if (McFlurryArrowHandler.IsOwnedAndIncomplete(__instance))
         {
-            if (ArrowHandler.NeedsSpecialTarget(__instance))
+            if (McFlurryArrowHandler.NeedsSpecialTarget(__instance))
             {
-                ArrowHandler.SetArrowTargetForSpecialTasks(__instance);
+                McFlurryArrowHandler.SetArrowTargetForSpecialTasks(__instance);
             }
 
             __instance.Arrow.gameObject.SetActive(true);
