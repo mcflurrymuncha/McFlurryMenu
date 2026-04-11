@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
-public static class TracersHandler
+public static class McFlurryTracersHandler
 {
     // Draws a tracer from LocalPlayer to another player.
     public static void DrawPlayerTracer(PlayerPhysics playerPhysics)
