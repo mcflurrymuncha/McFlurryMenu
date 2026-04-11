@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
 public static class LogicGameFlowNormal_CheckEndCriteria
@@ -23,7 +23,6 @@ public static class LogicGameFlowNormal_IsGameOverDueToDeath
         {
             __result = false;
         }
-
     }
 }
 
@@ -48,6 +47,5 @@ public static class LogicGameFlowHnS_IsGameOverDueToDeath
         {
             __result = false;
         }
-
     }
 }
