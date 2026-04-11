@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ConsoleTab : ITab
 {
@@ -8,6 +8,7 @@ public class ConsoleTab : ITab
 
     public void Draw()
     {
+        // Maintains the standard McFlurry Menu width for column alignment
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -17,6 +18,7 @@ public class ConsoleTab : ITab
 
     private void DrawGeneral()
     {
+        // Toggles for the event logger / console system
         CheatToggles.showConsole = GUILayout.Toggle(CheatToggles.showConsole, " Show Console");
 
         CheatToggles.logDeaths = GUILayout.Toggle(CheatToggles.logDeaths, " Log Deaths");
