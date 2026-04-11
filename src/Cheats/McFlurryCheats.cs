@@ -4,8 +4,9 @@ using AmongUs.InnerNet.GameDataMessages;
 using UnityEngine;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
-namespace MalumMenu;
-public static class MalumCheats
+namespace McFlurryMenu;
+
+public static class McFlurryCheats
 {
     private static bool _isScanAnimActive;
     private static bool _isCamsAnimActive;
@@ -16,7 +17,6 @@ public static class MalumCheats
 
         if (Utils.isMeeting) // Closes MeetingHud window if it's open
         {
-
             // Destroy MeetingHud window gameobject
             MeetingHud.Instance.DespawnOnDestroy = false;
             Object.Destroy(MeetingHud.Instance.gameObject);
@@ -29,7 +29,6 @@ public static class MalumCheats
             DestroyableSingleton<HudManager>.Instance.SetMapButtonEnabled(true);
             DestroyableSingleton<HudManager>.Instance.SetHudActive(true);
             ControllerManager.Instance.CloseAndResetAll();
-
         }
         else if (ExileController.Instance) // Ends exile cutscene if it's playing
         {
@@ -152,7 +151,6 @@ public static class MalumCheats
         {
             // Shapeshift duration is reset to normal value after the cheat is disabled
             shapeshifterRole.durationSecondsRemaining = GameManager.Instance.LogicOptions.GetRoleFloat(FloatOptionNames.ShapeshifterDuration);
-
         }
     }
 
@@ -205,18 +203,12 @@ public static class MalumCheats
 
     public static void UseVentCheat(HudManager hudManager)
     {
-        // try-catch to prevent errors when role is null
         try
         {
-
-			// Engineers & Impostors don't need this cheat so it is disabled for them
-			// Ghost venting causes issues so it is also disabled
-
-			if (!PlayerControl.LocalPlayer.Data.Role.CanVent && !PlayerControl.LocalPlayer.Data.IsDead)
+            if (!PlayerControl.LocalPlayer.Data.Role.CanVent && !PlayerControl.LocalPlayer.Data.IsDead)
             {
-				hudManager.ImpostorVentButton.gameObject.SetActive(CheatToggles.unlockVents);
-			}
-
+                hudManager.ImpostorVentButton.gameObject.SetActive(CheatToggles.unlockVents);
+            }
         } catch { }
     }
 
@@ -228,7 +220,6 @@ public static class MalumCheats
 
             PlayerControl.LocalPlayer.inVent = false;
             PlayerControl.LocalPlayer.moveable = true;
-
         } catch { }
     }
 
@@ -254,7 +245,6 @@ public static class MalumCheats
         }
         else
         {
-            // Kill all players by sending a successful MurderPlayer RPC call
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 Utils.MurderPlayer(player, MurderResultFlags.Succeeded);
@@ -274,7 +264,6 @@ public static class MalumCheats
         }
         else
         {
-            // Kill all players by sending a successful MurderPlayer RPC call
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 if (player.Data.Role.TeamType == RoleTeamTypes.Crewmate)
@@ -297,7 +286,6 @@ public static class MalumCheats
         }
         else
         {
-            // Kill all players by sending a successful MurderPlayer RPC call
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 if (player.Data.Role.TeamType == RoleTeamTypes.Impostor)
@@ -316,9 +304,8 @@ public static class MalumCheats
 
         foreach (var player in ProtectUI.playersToProtect)
         {
-            if (player.protectedByGuardianId == -1) // -1 means no protection is currently active
+            if (player.protectedByGuardianId == -1) 
             {
-                //PlayerControl.LocalPlayer.TurnOnProtection(true, PlayerControl.LocalPlayer.cosmetics.ColorId, PlayerControl.LocalPlayer.PlayerId);
                 PlayerControl.LocalPlayer.RpcProtectPlayer(player, PlayerControl.LocalPlayer.cosmetics.ColorId);
             }
         }
@@ -329,7 +316,6 @@ public static class MalumCheats
         if (PlayerControl.LocalPlayer?.NetTransform == null || Camera.main == null) return;
         if (!CheatToggles.teleportCursor) return;
 
-        // Teleport player to cursor's in-world position on right-click
         if (Input.GetMouseButtonDown(1))
         {
             PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(Camera.main.ScreenToWorldPoint(Input.mousePosition));
@@ -340,9 +326,7 @@ public static class MalumCheats
     {
         try
         {
-
             PlayerControl.LocalPlayer.Collider.enabled = !(CheatToggles.noClip || PlayerControl.LocalPlayer.onLadder);
-
         } catch { }
     }
 
@@ -372,7 +356,6 @@ public static class MalumCheats
     {
         if (CheatToggles.animPet && Utils.isPlayer && PlayerControl.LocalPlayer.cosmetics != null && PlayerControl.LocalPlayer.cosmetics.CurrentPet != null)
         {
-            // Don't move LocalPlayer, just send the RPC so others see the petting animation
             RpcPetMessage rpcMessage = new(PlayerControl.LocalPlayer.MyPhysics.NetId,
                 PlayerControl.LocalPlayer.cosmetics.CurrentPet.PettingPlayerPosition,
                 PlayerControl.LocalPlayer.cosmetics.CurrentPet.transform.position);
@@ -380,7 +363,6 @@ public static class MalumCheats
         }
 
         byte mapId = Utils.GetCurrentMapID();
-
         if (mapId == byte.MaxValue) return;
 
         var map = (MapNames)mapId;
@@ -420,13 +402,11 @@ public static class MalumCheats
         {
             if (CheatToggles.animCamsInUse && !_isCamsAnimActive)
             {
-                // ShipStatus.Instance.UpdateSystem(SystemTypes.Security, PlayerControl.LocalPlayer, (byte)(CheatToggles.animCamsInUse ? 1 : 0));
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Security, 1);
                 _isCamsAnimActive = true;
             }
             else if (!CheatToggles.animCamsInUse && _isCamsAnimActive)
             {
-                // Turn off cams if the cheat was used before and is now disabled
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Security, 0);
                 _isCamsAnimActive = false;
             }
@@ -444,9 +424,6 @@ public static class MalumCheats
         CheatToggles.animEmptyGarbage = false;
         CheatToggles.animMedScan = false;
         CheatToggles.animCamsInUse = false;
-
-        // This ensures cams and scan animations don't remain marked as active if the player
-        // disconnects while the toggles are on (as this may cause unusual RPCs in lobbies)
 
         _isCamsAnimActive = false;
         _isScanAnimActive = false;
