@@ -2,7 +2,7 @@ using Il2CppSystem;
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ConsoleUI : MonoBehaviour
 {
@@ -14,29 +14,32 @@ public class ConsoleUI : MonoBehaviour
 
     public static void Log(string message)
     {
-        if (_logEntries.Count >= MaxLogEntries) // Limit the number of logs to keep memory usage in check
+        // Limit the number of logs to keep memory usage in check
+        if (_logEntries.Count >= MaxLogEntries)
         {
             _logEntries.RemoveAt(0); // Remove the oldest log entry
         }
 
         _logEntries.Add(message);
 
-        // Scroll to the bottom
+        // Auto-scroll to the bottom for new entries
         _scrollPosition.y = float.MaxValue;
     }
 
     private void OnGUI()
     {
-        if (!CheatToggles.showConsole || !MenuUI.isGUIActive || MalumMenu.isPanicked) return;
+        // Check for rebranded CheatToggles and the McFlurryPlugin panic state
+        if (!CheatToggles.showConsole || !MenuUI.isGUIActive || McFlurryPlugin.isPanicked) return;
 
         _logStyle ??= new GUIStyle(GUI.skin.label)
         {
             fontSize = 16
         };
 
+        // Apply the ice-cream themed UI colors
         UIHelpers.ApplyUIColor();
 
-        _windowRect = GUI.Window((int)WindowId.ConsoleUI, _windowRect, (GUI.WindowFunction)ConsoleWindow, "Console");
+        _windowRect = GUI.Window((int)WindowId.ConsoleUI, _windowRect, (GUI.WindowFunction)ConsoleWindow, "McFlurry Console");
     }
 
     private void ConsoleWindow(int windowID)
@@ -56,6 +59,7 @@ public class ConsoleUI : MonoBehaviour
 
         GUILayout.BeginHorizontal();
 
+        // UI Controls for log management
         if (GUILayout.Button("Clear Log", GUILayout.Width(260)))
         {
             _logEntries.Clear();
@@ -68,6 +72,7 @@ public class ConsoleUI : MonoBehaviour
 
         GUILayout.EndHorizontal();
 
+        // Allow users to move the console around the screen
         GUI.DragWindow();
     }
 }
