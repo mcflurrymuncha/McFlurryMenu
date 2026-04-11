@@ -1,26 +1,42 @@
 using UnityEngine;
+using BepInEx.Configuration;
 
-namespace McFlurryMenu;
+namespace McFlurryMenu; // Ensure this matches the rest of your files
 
-public class McFlurryKeybindListener : MonoBehaviour
+public class KeybindListener : MonoBehaviour
 {
-    public void Update()
+    private void Update()
     {
-        if (McFlurryMenu.isPanicked) return;
-
-        // Keybinds aren't triggered from typing in the chat
-        if (HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening) return;
-
-        // Check each keybind to see if the user pressed it and toggle the corresponding cheat
-        foreach (var (name, key) in CheatToggles.Keybinds)
+        // 1. Check if the Menu Toggle key is pressed (e.g., Delete key)
+        if (Input.GetKeyDown(Utils.GetKeyCodeFromConfig(McFlurryPlugin.menuKeybind)))
         {
-            if (key == KeyCode.None) continue;
-            if (!Input.GetKeyDown(key)) continue;
+            if (McFlurryPlugin.isPanicked) return; // Don't allow menu during Panic Mode
 
-            if (!CheatToggles.ToggleFields.TryGetValue(name, out var field)) continue;
-
-            var current = (bool)field.GetValue(null);
-            field.SetValue(null, !current);
+            MenuUI.isGUIActive = !MenuUI.isGUIActive;
+            
+            // If the menu is being opened and 'OpenOnMouse' is enabled, reposition the window
+            if (MenuUI.isGUIActive && McFlurryPlugin.menuOpenOnMouse.Value)
+            {
+                MenuUI.UpdateWindowPositionToMouse();
+            }
         }
+
+        // 2. Panic Keybind (Hardcoded or could be added to config)
+        // Instantly closes all UI and disables features for stealth
+        if (Input.GetKeyDown(KeyCode.End))
+        {
+            ExecutePanic();
+        }
+    }
+
+    private void ExecutePanic()
+    {
+        McFlurryPlugin.isPanicked = true;
+        MenuUI.isGUIActive = false;
+        
+        // Reset dangerous toggles immediately
+        CheatToggles.ResetAllToggles();
+        
+        McFlurryPlugin.Log.LogWarning("PANIC MODE ACTIVATED: All features disabled.");
     }
 }
