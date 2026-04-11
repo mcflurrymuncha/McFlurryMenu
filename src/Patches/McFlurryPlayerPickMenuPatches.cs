@@ -3,7 +3,7 @@ using HarmonyLib;
 using UnityEngine;
 using Il2CppSystem.Collections.Generic;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(ShapeshifterMinigame), nameof(ShapeshifterMinigame.Begin))]
 public static class ShapeshifterMinigame_Begin
@@ -11,13 +11,13 @@ public static class ShapeshifterMinigame_Begin
     // Prefix patch of ShapeshifterMinigame.Begin to implement player pick menu logic
     public static bool Prefix(ShapeshifterMinigame __instance)
     {
-        if (!PlayerPickMenu.isActive) return true; // Open normal shapeshifter menu if not active
+        // Rebranded reference to McFlurryPlayerPickMenu
+        if (!McFlurryPlayerPickMenu.isActive) return true; 
 
         // Custom player list set by openPlayerPickMenu
-        List<NetworkedPlayerInfo> playerList = PlayerPickMenu.customPlayerList;
+        List<NetworkedPlayerInfo> playerList = McFlurryPlayerPickMenu.customPlayerList;
 
         __instance.potentialVictims = new List<ShapeshifterPanel>();
-
         List<UiElement> selectableElements = new List<UiElement>();
 
         for (int i = 0; i < playerList.Count; i++)
@@ -31,9 +31,8 @@ public static class ShapeshifterMinigame_Begin
 
             shapeshifterPanel.SetPlayer(i, playerData, (Il2CppSystem.Action) (() =>
             {
-                PlayerPickMenu.targetPlayerData = playerData; // Save targeted player
-
-                PlayerPickMenu.customAction.Invoke(); // Custom action set by openPlayerPickMenu
+                McFlurryPlayerPickMenu.targetPlayerData = playerData; // Save targeted player
+                McFlurryPlayerPickMenu.customAction.Invoke(); // Custom action set by openPlayerPickMenu
 
                 __instance.Close();
             }));
@@ -55,33 +54,31 @@ public static class ShapeshifterMinigame_Begin
                 }
                 else
                 {
-                    // Reset the position and scale of the nametag to default values (they're kinda weird but whatever)
+                    // Reset nametag to default values
                     shapeshifterPanel.NameText.transform.localPosition = new Vector3(0.3384f, 0.0311f, -0.1f);
                     shapeshifterPanel.NameText.transform.localScale = new Vector3(0.9f, 1f, 1f);
                 }
             }
 
             __instance.potentialVictims.Add(shapeshifterPanel);
-
             selectableElements.Add(shapeshifterPanel.Button);
         }
 
         ControllerManager.Instance.OpenOverlayMenu(__instance.name, __instance.BackButton, __instance.DefaultButtonSelected, selectableElements, false);
 
-        PlayerPickMenu.isActive = false;
+        McFlurryPlayerPickMenu.isActive = false;
 
-        return false; // Skip original method when active
-
+        return false; // Skip original method when McFlurry pick menu is active
     }
 }
 
 [HarmonyPatch(typeof(ShapeshifterPanel), nameof(ShapeshifterPanel.SetPlayer))]
 public static class ShapeshifterPanel_SetPlayer
 {
-    // Prefix patch of ShapeshifterPanel.SetPlayer to allow usage of PlayerPickMenu in lobbies
+    // Prefix patch to allow usage of McFlurryPlayerPickMenu in lobbies
     public static bool Prefix(ShapeshifterPanel __instance, int index, NetworkedPlayerInfo playerInfo, Il2CppSystem.Action onShift)
     {
-        if (!PlayerPickMenu.isActive) return true; // Open normal shapeshifter menu if not active
+        if (!McFlurryPlayerPickMenu.isActive) return true; 
 
         __instance.shapeshift = onShift;
 
@@ -99,13 +96,12 @@ public static class ShapeshifterPanel_SetPlayer
 
         __instance.LevelNumberText.text = ProgressionManager.FormatVisualLevel(playerInfo.PlayerLevel);
 
-        // Skips using custom nameplates because they break the PlayerPickMenu in lobbies
-
+        // Uses the standard name to avoid breaking the UI layout in lobbies
         __instance.NameText.text = playerInfo.PlayerName;
 
         DataManager.Settings.Accessibility.OnColorBlindModeChanged += (Il2CppSystem.Action)__instance.SetColorblindText;
         __instance.SetColorblindText();
 
-        return false; // Skips original method when active
+        return false; // Skips original method when McFlurry pick menu is active
     }
 }
