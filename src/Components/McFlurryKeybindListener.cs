@@ -1,12 +1,12 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
-public class KeybindListener : MonoBehaviour
+public class McFlurryKeybindListener : MonoBehaviour
 {
     public void Update()
     {
-        if (MalumMenu.isPanicked) return;
+        if (McFlurryMenu.isPanicked) return;
 
         // Keybinds aren't triggered from typing in the chat
         if (HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening) return;
