@@ -4,7 +4,7 @@ using System.Reflection;
 using AmongUs.GameOptions;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public struct CheatToggles
 {
@@ -157,7 +157,8 @@ public struct CheatToggles
     // Map for Reflection Access: Toggle Name -> FieldInfo
     public static readonly Dictionary<string, FieldInfo> ToggleFields = new();
 
-    public static readonly string ProfilePath = Path.Combine(BepInEx.Paths.ConfigPath, "MalumProfile.txt");
+    // File path for the rebranded config
+    public static readonly string ProfilePath = Path.Combine(BepInEx.Paths.ConfigPath, "McFlurryProfile.txt");
 
     // Populate reflection map once at startup and initialize Keybinds with KeyCode.None
     static CheatToggles()
@@ -199,29 +200,24 @@ public struct CheatToggles
         }
     }
 
-    // Saves cheat toggles and their keybinds to MalumProfile.txt
-    // Format per line: ToggleName = True/False = KeyCode.KEY
+    // Saves cheat toggles and their keybinds to McFlurryProfile.txt
     public static void SaveTogglesToProfile()
     {
         using var writer = new StreamWriter(ProfilePath);
 
-        writer.WriteLine("# MalumProfile");
+        writer.WriteLine("# McFlurryProfile");
         writer.WriteLine("# Format: ToggleName = True/False = KeyCode.KEY");
-        writer.WriteLine("# - List of supported keycodes: https://docs.unity3d.com/Packages/com.unity.tiny@0.16/api/Unity.Tiny.Input.KeyCode.html");
         writer.WriteLine("# - Setting a keybind is optional. Use KeyCode.None to not set a keybind");
-        writer.WriteLine("# - Multiple toggles may have the same key, but multiple keys per toggle are NOT supported");
-        writer.WriteLine("# - Keybinds are only applied after loading this profile by pressing 'Load from Profile' in the Config menu");
         writer.WriteLine();
 
         foreach (var field in ToggleFields.Values)
         {
-            Keybinds.TryGetValue(field.Name, out var key);  // If no key is set then write KeyCode.None
+            Keybinds.TryGetValue(field.Name, out var key);
             writer.WriteLine($"{field.Name} = {field.GetValue(null)} = KeyCode.{key}");
         }
     }
 
-    // Loads cheat toggles and their keybinds from MalumProfile.txt if the file is present
-    // Format per line: ToggleName = True/False = KeyCode.KEY
+    // Loads cheat toggles and their keybinds from McFlurryProfile.txt if the file is present
     public static void LoadTogglesFromProfile()
     {
         if (!File.Exists(ProfilePath)) return;
@@ -230,28 +226,22 @@ public struct CheatToggles
 
         while (reader.ReadLine() is { } line)
         {
-            // Skips empty lines
             if (string.IsNullOrWhiteSpace(line)) continue;
 
-            // Skips lines that are commented out
             line = line.Trim();
             if (line.StartsWith("#")) continue;
 
-            // Extracts the three relevant config values for each remaining line
             var parts = line.Split('=', 3);
             if (parts.Length < 2) continue;
 
-            // Gets the cheat's FieldInfo from its name
             var name = parts[0].Trim();
             if (!ToggleFields.TryGetValue(name, out var field)) continue;
 
-            // Loads whether the cheat is enabled or disabled by default
             if (bool.TryParse(parts[1].Trim(), out var boolVal))
             {
                 field.SetValue(null, boolVal);
             }
 
-            // Loads the keybind associated with each cheat
             KeyCode key = KeyCode.None;
             if (parts.Length >= 3)
             {
