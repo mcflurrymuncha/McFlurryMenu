@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ShipTab : ITab
 {
@@ -10,6 +10,7 @@ public class ShipTab : ITab
     {
         GUILayout.BeginHorizontal();
 
+        // Left Column: General Utility and Sabotage
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -20,6 +21,7 @@ public class ShipTab : ITab
 
         GUILayout.EndVertical();
 
+        // Right Column: Vent Interaction
         GUILayout.BeginVertical();
 
         DrawVents();
@@ -31,6 +33,7 @@ public class ShipTab : ITab
 
     private void DrawGeneral()
     {
+        // Global ship state and interaction bypasses
         CheatToggles.unfixableLights = GUILayout.Toggle(CheatToggles.unfixableLights, " Unfixable Lights");
 
         // CheatToggles.reportBody = GUILayout.Toggle(CheatToggles.reportBody, " Report Body");
@@ -46,6 +49,7 @@ public class ShipTab : ITab
     {
         GUILayout.Label("Sabotage", GUIStylePreset.TabSubtitle);
 
+        // Targeted system malfunctions
         CheatToggles.reactorSab = GUILayout.Toggle(CheatToggles.reactorSab, " Reactor");
 
         CheatToggles.oxygenSab = GUILayout.Toggle(CheatToggles.oxygenSab, " Oxygen");
@@ -67,6 +71,7 @@ public class ShipTab : ITab
     {
         GUILayout.Label("Vents", GUIStylePreset.TabSubtitle);
 
+        // Global vent permissions and actions
         CheatToggles.unlockVents = GUILayout.Toggle(CheatToggles.unlockVents, " Unlock Vents");
 
         CheatToggles.kickVents = GUILayout.Toggle(CheatToggles.kickVents, " Kick All From Vents");
