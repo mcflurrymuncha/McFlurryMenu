@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class MenuUI : MonoBehaviour
 {
@@ -39,13 +39,12 @@ public class MenuUI : MonoBehaviour
 
     private void Update()
     {
-
-        if (Input.GetKeyDown(Utils.StringToKeycode(MalumMenu.menuKeybind.Value)))
+        // Toggle menu with the configured keybind
+        if (Input.GetKeyDown(Utils.StringToKeycode(McFlurryPlugin.menuKeybind.Value)))
         {
-            // Enable or disable GUI with DELETE key
             isGUIActive = !isGUIActive;
 
-            if (MalumMenu.menuOpenOnMouse.Value)
+            if (McFlurryPlugin.menuOpenOnMouse.Value)
             {
                 // Teleport the window to the mouse for immediate use
                 Vector2 mousePosition = Input.mousePosition;
@@ -53,18 +52,19 @@ public class MenuUI : MonoBehaviour
             }
         }
 
+        // RGB Mode hue cycling
         if (CheatToggles.rgbMode)
         {
-            hue += Time.deltaTime * 0.3f; // Adjust speed of color change, higher multiplier = faster
-            if (hue > 1f) hue -= 1f; // Loop hue back to 0 when it exceeds 1
+            hue += Time.deltaTime * 0.3f; 
+            if (hue > 1f) hue -= 1f; 
         }
 
-        if (CheatToggles.stealthMode != MalumMenu.inStealthMode)
+        // Stealth Mode Logic
+        if (CheatToggles.stealthMode != McFlurryPlugin.inStealthMode)
         {
-            MalumMenu.inStealthMode = CheatToggles.stealthMode;
+            McFlurryPlugin.inStealthMode = CheatToggles.stealthMode;
 
             Scene scene = SceneManager.GetActiveScene();
-
             if (scene.name == "MainMenu" || scene.name == "MatchMaking")
             {
                 SceneManager.LoadScene(scene.name);
@@ -73,18 +73,20 @@ public class MenuUI : MonoBehaviour
 
         if (CheatToggles.panicMode) Utils.Panic();
 
+        // Mod Stamp handling
         var stamp = ModManager.Instance.ModStamp;
-        if (stamp) stamp.enabled = !(MalumMenu.inStealthMode || MalumMenu.isPanicked);
+        if (stamp) stamp.enabled = !(McFlurryPlugin.inStealthMode || McFlurryPlugin.isPanicked);
 
+        // Config & Profile handling
         if (CheatToggles.reloadConfig)
         {
-            MalumMenu.Plugin.Config.Reload();
+            McFlurryPlugin.Plugin.Config.Reload();
             CheatToggles.reloadConfig = false;
         }
 
         if (CheatToggles.saveProfile)
         {
-            CheatToggles.saveProfile = false; // Disable first to avoid saving it to profile
+            CheatToggles.saveProfile = false; 
             CheatToggles.SaveTogglesToProfile();
         }
 
@@ -94,7 +96,7 @@ public class MenuUI : MonoBehaviour
             CheatToggles.loadProfile = false;
         }
 
-        // Some cheats only work if the LocalPlayer exists, so they are turned off if it does not
+        // Safety Resets: Clear player-dependent cheats if not in-game
         if(!Utils.isPlayer)
         {
             CheatToggles.setFakeRole = false;
@@ -110,7 +112,7 @@ public class MenuUI : MonoBehaviour
             CheatToggles.callMeeting = false;
         }
 
-        // Some cheats only work if the ship exists, so they are turned off if it does not
+        // Safety Resets: Clear ship-dependent cheats if ship doesn't exist
         if(!Utils.isShip)
         {
             CheatToggles.sabotageMap = false;
@@ -130,9 +132,10 @@ public class MenuUI : MonoBehaviour
             CheatToggles.spamOpenAllDoors = false;
             CheatToggles.mushSpore = false;
 
-            MalumCheats.StopShipAnimCheats();
+            McFlurryCheats.StopShipAnimCheats();
         }
 
+        // Host-Only protection
         if(!Utils.isHost && !Utils.isFreePlay)
         {
             CheatToggles.killAll = false;
@@ -153,7 +156,6 @@ public class MenuUI : MonoBehaviour
             CheatToggles.noOptionsLimits = false;
         }
 
-        // Some cheats only work if in a meeting, so they are turned off if it does not
         if (!Utils.isMeeting)
         {
             CheatToggles.skipMeeting = false;
@@ -163,20 +165,19 @@ public class MenuUI : MonoBehaviour
 
     public void OnGUI()
     {
-        if (!isGUIActive || MalumMenu.isPanicked) return;
+        if (!isGUIActive || McFlurryPlugin.isPanicked) return;
 
         InitStyles();
-
         UIHelpers.ApplyUIColor();
 
-        _windowRect = GUI.Window((int)WindowId.MenuUI, _windowRect, (GUI.WindowFunction)WindowFunction, "MalumMenu v" + MalumMenu.malumVersion);
+        _windowRect = GUI.Window((int)WindowId.MenuUI, _windowRect, (GUI.WindowFunction)WindowFunction, "McFlurryMenu v" + McFlurryPlugin.mcFlurryVersion);
     }
 
     public void WindowFunction(int windowID)
     {
         GUILayout.BeginHorizontal();
 
-        // Left tab selector (15% width)
+        // Left tab selector
         GUILayout.BeginVertical(GUILayout.Width(windowWidth * 0.15f));
         for (var i = 0; i < _tabs.Count; i++)
         {
@@ -191,18 +192,16 @@ public class MenuUI : MonoBehaviour
                 _selectedTab = i;
 
             GUI.backgroundColor = standardColor;
-
         }
         GUILayout.EndVertical();
 
-        // Vertical separator line + invisible space to create gap between the tab selector and the content
+        // Visual Separator
         GUILayout.Box("", GUIStylePreset.Separator, GUILayout.Width(1f), GUILayout.ExpandHeight(true));
         GUILayout.Space(10f);
 
-        // Right tab content and controls (85% width)
+        // Right Content Area
         GUILayout.BeginVertical(GUILayout.Width(windowWidth * 0.85f));
 
-        // Tab-specific content
         if (_selectedTab >= 0 && _selectedTab < _tabs.Count)
         {
             GUILayout.Label(_tabs[_selectedTab].name, GUIStylePreset.TabTitle);
@@ -210,10 +209,8 @@ public class MenuUI : MonoBehaviour
         }
 
         GUILayout.EndVertical();
-
         GUILayout.EndHorizontal();
 
-        // Make the window draggable
         GUI.DragWindow();
     }
 }
