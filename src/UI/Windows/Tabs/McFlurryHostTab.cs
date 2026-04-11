@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class HostOnlyTab : ITab
 {
@@ -10,6 +10,7 @@ public class HostOnlyTab : ITab
     {
         GUILayout.BeginHorizontal();
 
+        // Left Column: General, Murder, and Game State
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -24,6 +25,7 @@ public class HostOnlyTab : ITab
 
         GUILayout.EndVertical();
 
+        // Right Column: Meetings
         GUILayout.BeginVertical();
 
         DrawMeetings();
@@ -35,6 +37,7 @@ public class HostOnlyTab : ITab
 
     private void DrawGeneral()
     {
+        // Global Host modifications
         CheatToggles.killVanished = GUILayout.Toggle(CheatToggles.killVanished, " Kill While Vanished");
 
         CheatToggles.killAnyone = GUILayout.Toggle(CheatToggles.killAnyone, " Kill Anyone");
@@ -44,7 +47,6 @@ public class HostOnlyTab : ITab
         CheatToggles.showProtectMenu = GUILayout.Toggle(CheatToggles.showProtectMenu, " Show Protect Menu");
 
         // CheatToggles.forceRole = GUILayout.Toggle(CheatToggles.forceRole, " Force Role");
-
         // CheatToggles.noOptionsLimits = GUILayout.Toggle(CheatToggles.noOptionsLimits, " No Options Limits");
     }
 
@@ -52,6 +54,7 @@ public class HostOnlyTab : ITab
     {
         GUILayout.Label("Murder", GUIStylePreset.TabSubtitle);
 
+        // Targeted and Mass elimination toggles
         CheatToggles.killPlayer = GUILayout.Toggle(CheatToggles.killPlayer, " Kill Player");
 
         CheatToggles.telekillPlayer = GUILayout.Toggle(CheatToggles.telekillPlayer, " Telekill Player");
@@ -76,6 +79,7 @@ public class HostOnlyTab : ITab
     {
         GUILayout.Label("Meetings", GUIStylePreset.TabSubtitle);
 
+        // Control over the voting phase
         CheatToggles.skipMeeting = GUILayout.Toggle(CheatToggles.skipMeeting, " Skip Meeting");
 
         CheatToggles.voteImmune = GUILayout.Toggle(CheatToggles.voteImmune, " Vote Immune");
