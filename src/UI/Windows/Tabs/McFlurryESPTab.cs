@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class ESPTab : ITab
 {
@@ -10,6 +10,7 @@ public class ESPTab : ITab
     {
         GUILayout.BeginHorizontal();
 
+        // Left Column: General and Camera
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         DrawGeneral();
@@ -20,6 +21,7 @@ public class ESPTab : ITab
 
         GUILayout.EndVertical();
 
+        // Right Column: Tracers and Minimap
         GUILayout.BeginVertical();
 
         DrawTracers();
