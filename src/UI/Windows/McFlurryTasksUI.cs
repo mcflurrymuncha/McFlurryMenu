@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public class TasksUI : MonoBehaviour
 {
@@ -13,7 +13,8 @@ public class TasksUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showTasksMenu || !MenuUI.isGUIActive || MalumMenu.isPanicked) return;
+        // Safety check using rebranded McFlurryPlugin and MenuUI logic
+        if (!CheatToggles.showTasksMenu || !MenuUI.isGUIActive || McFlurryPlugin.isPanicked) return;
 
         _playerHeaderStyle ??= new GUIStyle(GUI.skin.button)
         {
@@ -21,9 +22,10 @@ public class TasksUI : MonoBehaviour
             alignment = TextAnchor.MiddleLeft
         };
 
+        // Apply the ice-cream themed colors
         UIHelpers.ApplyUIColor();
 
-        _windowRect = GUI.Window((int)WindowId.TasksUI, _windowRect, (GUI.WindowFunction)TasksWindow, "Tasks");
+        _windowRect = GUI.Window((int)WindowId.TasksUI, _windowRect, (GUI.WindowFunction)TasksWindow, "McFlurry Task Tracker");
     }
 
     private void TasksWindow(int windowID)
@@ -42,9 +44,11 @@ public class TasksUI : MonoBehaviour
             _expandedPlayers.TryGetValue(nameKey, out var expanded);
             var arrow = expanded ? "\u25BC" : "\u25B6"; // ▼ or ▶
 
+            // Calculate progress
             var taskCount = player.myTasks.Count;
             var completeCount = player.myTasks.ToArray().Count(t => t.IsComplete);
 
+            // Filtering out non-actual tasks (dead hints, sabotage info, etc.)
             if (player == PlayerControl.LocalPlayer && player.Data.IsDead)
             {
                 taskCount -= 1;
@@ -58,6 +62,7 @@ public class TasksUI : MonoBehaviour
                 taskCount -= 1;
             }
 
+            // Dropdown button for each player
             if (GUILayout.Button($"{arrow} [{completeCount}/{taskCount}] <color=#{ColorUtility.ToHtmlStringRGB(player.Data.Color)}>{nameKey}</color>", _playerHeaderStyle))
             {
                 _expandedPlayers[nameKey] = !expanded;
@@ -67,22 +72,23 @@ public class TasksUI : MonoBehaviour
             if (expanded)
             {
                 GUILayout.BeginHorizontal();
-
+                GUILayout.Space(15f); // Indent tasks
                 GUILayout.BeginVertical();
 
                 foreach (var task in player.myTasks)
                 {
-                    // Do some checks to not show texts: sabotage active, dead hint, impostor hint
+                    // Skip technical sabotage/role-related "tasks"
                     if (task.TaskType is TaskTypes.ResetReactor or TaskTypes.RestoreOxy or TaskTypes.FixLights or TaskTypes.FixComms or TaskTypes.ResetSeismic or TaskTypes.StopCharles or TaskTypes.MushroomMixupSabotage) continue;
 
                     _tasksString.Clear();
                     task.AppendTaskText(_tasksString);
-                    //_tasksString.Append($"Task Type: {task.TaskType.ToString()}");
                     var taskText = _tasksString.ToString();
 
+                    // Filter out UI flavor text
                     if (taskText.Contains("You're dead") || taskText.Contains("Sabotage and kill")) continue;
 
                     GUILayout.BeginHorizontal();
+                    // Clean rich text tags for a cleaner console-like look
                     GUILayout.Label(taskText.Replace("\n", "").Replace("</color>", "").Replace("<color=#00DD00FF>", "").Replace("<color=#FFFF00FF>", ""));
                     GUILayout.FlexibleSpace();
 
@@ -92,6 +98,7 @@ public class TasksUI : MonoBehaviour
                     }
                     else
                     {
+                        // Only allow the user to complete their OWN tasks via the UI
                         if (player == PlayerControl.LocalPlayer)
                         {
                             if (GUILayout.Button("Complete", GUIStylePreset.NormalButton))
@@ -104,7 +111,6 @@ public class TasksUI : MonoBehaviour
                 }
 
                 GUILayout.EndVertical();
-
                 GUILayout.EndHorizontal();
             }
 
@@ -113,7 +119,8 @@ public class TasksUI : MonoBehaviour
 
         GUILayout.EndScrollView();
 
-        if (GUILayout.Button("Complete My Tasks", GUIStylePreset.NormalButton))
+        // Mass-action button at the bottom
+        if (GUILayout.Button("Complete All My Tasks", GUIStylePreset.NormalButton))
         {
             CheatToggles.completeMyTasks = true;
         }
