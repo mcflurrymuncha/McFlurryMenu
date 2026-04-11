@@ -1,19 +1,17 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
 public static class PlayerControl_FixedUpdate
 {
     public static void Postfix(PlayerControl __instance)
     {
-
         if (__instance.AmOwner)
         {
-            MalumCheats.NoKillCdCheat(__instance);
+            McFlurryCheats.NoKillCdCheat(__instance);
         }
-
     }
 }
 
@@ -23,33 +21,9 @@ public static class PlayerControl_CmdCheckMurder
     // Prefix patch of PlayerControl.CmdCheckMurder to always bypass checks when killing players
     public static bool Prefix(PlayerControl __instance, PlayerControl target)
     {
-        /*if (Utils.isLobby){
-            HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
-            return false;
-        }
-
-        // Direct kill RPC should only be used when absolutely necessary as to avoid detection from anticheat mods
-        if (!CheatToggles.killAnyone && !CheatToggles.zeroKillCd && !Utils.isVanished(__instance.Data) &&
-            !Utils.isMeeting &&
-            (MalumPPMCheats.oldRole == null ||
-             Utils.getBehaviourByRoleType((AmongUs.GameOptions.RoleTypes)MalumPPMCheats.oldRole).IsImpostor))
-            return true;
-        if (!__instance.Data.Role.IsValidTarget(target.Data))
-        {
-            return true;
-        }
-
-        if (target.protectedByGuardianId > -1 && !CheatToggles.killAnyone){
-            return true;
-        }
-
-        Utils.murderPlayer(target, MurderResultFlags.Succeeded);
-
-        return false;*/
-
         if (!Utils.isHost) return true;
 
-        // __instance.isKilling = true;
+        // Force a direct RPC murder call if host to bypass range/cooldown checks
         PlayerControl.LocalPlayer.RpcMurderPlayer(target, true);
 
         return false;
@@ -59,9 +33,7 @@ public static class PlayerControl_CmdCheckMurder
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]
 public static class PlayerControl_MurderPlayer
 {
-    // Prefix patch of PlayerControl.MurderPlayer to log on ConsoleUI when a player tries to kill another player,
-    // along with who the killer and target are, and where the kill happened.
-    // Also logs when a kill gets saved by a guardian angel.
+    // Prefix patch of PlayerControl.MurderPlayer to log on ConsoleUI when a kill occurs
     public static void Prefix(PlayerControl __instance, PlayerControl target)
     {
         if (!CheatToggles.logDeaths || target == null) return;
@@ -88,10 +60,10 @@ public static class PlayerControl_MurderPlayer
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.TurnOnProtection))]
 public static class PlayerControl_TurnOnProtection
 {
-    // Prefix patch of PlayerControl.TurnOnProtection to make all protections visible
+    // Prefix patch to make protections visible if seeGhosts is active
     public static void Prefix(ref bool visible)
     {
-		if (CheatToggles.seeGhosts)
+        if (CheatToggles.seeGhosts)
         {
             visible = true;
         }
@@ -101,7 +73,7 @@ public static class PlayerControl_TurnOnProtection
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdCheckShapeshift))]
 public static class PlayerControl_CmdCheckShapeshift
 {
-    // Prefix patch of PlayerControl.CmdCheckShapeshift to prevent SS animation
+    // Prefix patch to prevent SS animation
     public static void Prefix(ref bool shouldAnimate)
     {
         if (shouldAnimate && CheatToggles.noShapeshiftAnim)
@@ -114,9 +86,9 @@ public static class PlayerControl_CmdCheckShapeshift
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdCheckRevertShapeshift))]
 public static class PlayerControl_CmdCheckRevertShapeshift
 {
-    // Prefix patch of PlayerControl.CmdCheckRevertShapeshift to prevent SS animation
-    public static void Prefix(ref bool shouldAnimate){
-
+    // Prefix patch to prevent revert SS animation
+    public static void Prefix(ref bool shouldAnimate)
+    {
         if (shouldAnimate && CheatToggles.noShapeshiftAnim)
         {
             shouldAnimate = false;
@@ -127,8 +99,7 @@ public static class PlayerControl_CmdCheckRevertShapeshift
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Shapeshift))]
 public static class PlayerControl_Shapeshift
 {
-    // Postfix patch of PlayerControl.Shapeshift to log on ConsoleUI when a player shapeshifts into another player,
-    // and who they shapeshifted into. Also logs when a shapeshift gets reverted.
+    // Postfix patch to log shapeshifting events in the ConsoleUI
     public static void Postfix(PlayerControl __instance, PlayerControl targetPlayer, bool animate)
     {
         if (!CheatToggles.logShapeshifts) return;
@@ -155,8 +126,7 @@ public static class PlayerControl_Shapeshift
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSyncSettings))]
 public static class PlayerControl_RpcSyncSettings
 {
-    // Prefix patch of PlayerControl.RpcSyncSettings to prevent the anti-cheat from kicking you
-    // for some settings that are out of the "original" valid range
+    // Prefix patch to prevent the anti-cheat from kicking for custom settings
     public static bool Prefix(PlayerControl __instance, byte[] optionsByteArray)
     {
         return !CheatToggles.noOptionsLimits;
