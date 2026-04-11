@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MalumMenu;
+namespace McFlurryMenu;
 
 public static class UIHelpers
 {
@@ -8,11 +8,13 @@ public static class UIHelpers
     {
         if (CheatToggles.rgbMode)
         {
-            GUI.backgroundColor = Color.HSVToRGB(MenuUI.hue, 1f, 1f); // Set background color based on hue
+            // Set background color based on the cycling hue in MenuUI
+            GUI.backgroundColor = Color.HSVToRGB(MenuUI.hue, 1f, 1f); 
         }
         else
         {
-            var configHtmlColor = MalumMenu.menuHtmlColor.Value;
+            // Rebranded reference to the main plugin's HTML color config
+            var configHtmlColor = McFlurryPlugin.menuHtmlColor.Value;
 
             if (!ColorUtility.TryParseHtmlString(configHtmlColor, out var uiColor))
             {
