@@ -1,5 +1,6 @@
 <p align="center">
-  McFlurryMenu
+  # McFlurryMenu
+  
     <a href="https://github.com/mcflurrymuncha/McFlurryMenu/releases">
     <img hspace="6" src="https://img.shields.io/github/downloads/mcflurrymuncha/McFlurryMenu/total?style=flat&logo=github&label=Total%20Downloads&color=2ECC71" alt="Downloads">
   </a>
