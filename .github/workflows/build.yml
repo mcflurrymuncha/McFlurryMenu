@@ -25,21 +25,34 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore
 
-      - name: Build DLL
-        run: dotnet build --configuration Release --output ./out
+      - name: Build Project
+        run: dotnet build --configuration Release --output ./build
+
+      - name: Rename Output to McFlurryMenu
+        # This finds any .dll in the build folder and renames it
+        shell: pwsh
+        run: |
+          $dll = Get-ChildItem -Path ./build/*.dll | Select-Object -First 1
+          if ($dll) {
+            Rename-Item -Path $dll.FullName -NewName "McFlurryMenu.dll"
+            Write-Host "Renamed $($dll.Name) to McFlurryMenu.dll"
+          } else {
+            Write-Error "No DLL found in build directory!"
+            exit 1
+          }
 
       - name: Upload Build Artifact
-        # This makes the file appear in the "Summary" page of your GitHub Action
         uses: actions/upload-artifact@v4
         with:
           name: McFlurryMenu-Binary
-          path: ./out/*
+          path: ./build/McFlurryMenu.dll
+          if-no-files-found: error
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: ./out/McFlurryMenu.dll
+          files: ./build/McFlurryMenu.dll
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
