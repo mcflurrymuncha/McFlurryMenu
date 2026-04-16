@@ -92,11 +92,11 @@ public static class VersionShower_Start
 
         if (MalumMenu.supportedAU.Contains(Application.version)) // Checks if Among Us version is supported
         {
-            __instance.text.text =  $"McFlurryMenu v{MalumMenu.malumVersion} (<color=pink>v{Application.version}<color>)"; // Supported
+            __instance.text.text =  $"McFlurryMenu v{MalumMenu.malumVersion} (v{Application.version})"; // Supported
         }
         else
         {
-            __instance.text.text =  $"McFlurryMenu v{MalumMenu.malumVersion} (<color=orange>v{Application.version}</color>)"; // Unsupported
+            __instance.text.text =  $"McFlurryMenu v{MalumMenu.malumVersion} (<color=red>v{Application.version}</color>)"; // Unsupported
         }
     }
 }
