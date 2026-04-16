@@ -315,17 +315,15 @@ public static class IntroCutscene_CoBegin
     }
 }
 
-[HarmonyPatch(typeof(AmongUsDateTime), nameof(AmongUsDateTime.UtcNow), MethodType.Getter)]
-public static class AmongUsDateTime_UtcNow
+[HarmonyPatch(typeof(AprilFoolsMode), nameof(AprilFoolsMode.ShouldShowAprilFoolsToggle))]
+public static class AprilFoolsMode_ShouldShowAprilFoolsToggle
 {
-    // Prefix patch of AmongUsDateTime.UtcNow to spoof the date to April 2nd, 7:01 AM UTC
-    // This sets the map to dlekS ehT (The Skeld but flipped) when hosting a lobby
-    public static bool Prefix(ref Il2CppSystem.DateTime __result)
+    // Prefix patch of AprilFoolsMode.ShouldShowAprilFoolsToggle to enable April Fools features
+    public static bool Prefix(ref bool __result)
     {
         if (!CheatToggles.spoofAprilFoolsDate) return true;
 
-        var managedDate = new DateTime(DateTime.UtcNow.Year, 4, 2, 7, 1, 0, DateTimeKind.Utc);
-        __result = new Il2CppSystem.DateTime(managedDate.Ticks);
+        __result = true;
 
         return false;
     }
