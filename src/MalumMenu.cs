@@ -1,3 +1,4 @@
+
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using UnityEngine.SceneManagement;
@@ -10,137 +11,149 @@ using BepInEx.Logging;
 using HarmonyLib;
 
 namespace MalumMenu;
-
-
- [BepInPlugin("com.mcflurry.mcflurrymenu", "McFlurryMenu", "1.0.0")]
-// [BepInAutoPlugin]
+[BepInPlugin("com.mcflurry.mcflurrymenu", "McFlurryMenu", "1.0.0")]
+//[BepInAutoPlugin]
 [BepInProcess("Among Us.exe")]
 public partial class MalumMenu : BasePlugin
 {
-    public Harmony Harmony { get; } = new(Id);
-    public static MalumMenu Plugin;
-    public new static ManualLogSource Log;
+    public Harmony Harmony { get; } = new(Id);
+    public static MalumMenu Plugin;
+    public new static ManualLogSource Log;
 
-    public static MenuUI menuUI;
-    public static ConsoleUI consoleUI;
-    public static RolesUI rolesUI;
-    public static DoorsUI doorsUI;
-    public static TasksUI tasksUI;
-    public static ProtectUI protectUI;
-    public static KeybindListener keybindListener;
+    public static MenuUI menuUI;
+    public static ConsoleUI consoleUI;
+    public static RolesUI rolesUI;
+    public static DoorsUI doorsUI;
+    public static TasksUI tasksUI;
+    public static ProtectUI protectUI;
+    public static KeybindListener keybindListener;
 
-    // Updated version string name
-    public static string mcflurryVersion = "1.0.0"; 
-    public static List<string> supportedAU = new List<string> { "2026.2.24", "2026.3.17", "2026.3.31" };
-    public static bool isPanicked = false;
-    public static bool inStealthMode = false;
+    public static string malumVersion = "1.0.0";
+    public static List<string> supportedAU = new List<string> { "2026.2.24", "2026.3.17", "2026.3.31" };
+    public static bool isPanicked = false;
+    public static bool inStealthMode = false;
 
-    public static ConfigEntry<string> menuKeybind;
-    public static ConfigEntry<string> menuHtmlColor;
-    public static ConfigEntry<bool> menuOpenOnMouse;
-    public static ConfigEntry<bool> menuKeepSubwindowsOpen;
-    public static ConfigEntry<string> spoofLevel;
-    public static ConfigEntry<string> spoofPlatform;
-    public static ConfigEntry<bool> spoofDeviceId;
-    public static ConfigEntry<bool> noTelemetry;
-    public static ConfigEntry<string> guestFriendCode;
-    public static ConfigEntry<bool> guestMode;
-    public static ConfigEntry<bool> autoLoadProfile;
-    public static ConfigEntry<string> configEditor;
+    public static ConfigEntry<string> menuKeybind;
+    public static ConfigEntry<string> menuHtmlColor;
+    public static ConfigEntry<bool> menuOpenOnMouse;
+    public static ConfigEntry<bool> menuKeepSubwindowsOpen;
+    public static ConfigEntry<string> spoofLevel;
+    public static ConfigEntry<string> spoofPlatform;
+    public static ConfigEntry<bool> spoofDeviceId;
+    public static ConfigEntry<bool> noTelemetry;
+    public static ConfigEntry<string> guestFriendCode;
+    public static ConfigEntry<bool> guestMode;
+    public static ConfigEntry<bool> autoLoadProfile;
+    public static ConfigEntry<string> configEditor;
 
-    public override void Load()
-    {
-        Log = base.Log;
-        Plugin = this;
+    public override void Load()
+    {
+        Log = base.Log;
+        Plugin = this;
 
-        // Updated Config Section Names to McFlurryMenu.GUI
-        menuKeybind = Config.Bind("McFlurryMenu.GUI",
-                                "Keybind",
-                                "Delete",
-                                "The keyboard key used to toggle the GUI on and off.");
+        // Loads config settings
+        menuKeybind = Config.Bind("MalumMenu.GUI",
+                                "Keybind",
+                                "Delete",
+                                "The keyboard key used to toggle the GUI on and off. List of supported keycodes: https://docs.unity3d.com/Packages/com.unity.tiny@0.16/api/Unity.Tiny.Input.KeyCode.html");
 
-        menuHtmlColor = Config.Bind("McFlurryMenu.GUI",
-                                "Color",
-                                "",
-                                "A custom color for your McFlurryMenu GUI.");
+        menuHtmlColor = Config.Bind("MalumMenu.GUI",
+                                "Color",
+                                "",
+                                "A custom color for your MalumMenu GUI. Supports html color codes");
 
-        menuOpenOnMouse = Config.Bind("McFlurryMenu.GUI",
-                                "OpenOnMouse",
-                                false,
-                                "When enabled, the McFlurryMenu GUI will always be opened at the current mouse position");
+        menuOpenOnMouse = Config.Bind("MalumMenu.GUI",
+                                "OpenOnMouse",
+                                false,
+                                "When enabled, the MalumMenu GUI will always be opened at the current mouse position");
 
-        menuKeepSubwindowsOpen = Config.Bind("McFlurryMenu.GUI",
-                                "KeepSubwindowsOpen",
-                                false,
-                                "When enabled, closing the McFlurryMenu GUI will not automatically close its subwindows");
+        menuKeepSubwindowsOpen = Config.Bind("MalumMenu.GUI",
+                                "KeepSubwindowsOpen",
+                                false,
+                                "When enabled, closing the MalumMenu GUI will not automatically close its subwindows");
 
-        autoLoadProfile = Config.Bind("McFlurryMenu.Profile",
-                                "AutoLoadProfile",
-                                false,
-                                "When enabled, your saved profile will be automatically loaded");
+        autoLoadProfile = Config.Bind("MalumMenu.Profile",
+                                "AutoLoadProfile",
+                                false,
+                                "When enabled, your saved keybind and toggle profile will be automatically loaded at game startup");
 
-        configEditor = Config.Bind("McFlurryMenu.Config",
-                                "ConfigEditor",
-                                "notepad.exe",
-                                "The program used to open the config file");
+        configEditor = Config.Bind("MalumMenu.Config",
+                                "ConfigEditor",
+                                "notepad.exe",
+                                "The program used to open the config file when using the Open Config toggle. Can be any executable, but using a text editor is recommended");
 
-        spoofLevel = Config.Bind("McFlurryMenu.Spoofing",
-                                "Level",
-                                "",
-                                "A custom player level to display to others");
+        // GuestMode config settings are commented out as the cheats are broken in latest updates
 
-        spoofPlatform = Config.Bind("McFlurryMenu.Spoofing",
-                                "Platform",
-                                "",
-                                "A custom gaming platform to display to others");
+        // guestMode = Config.Bind("MalumMenu.GuestMode",
+        //                         "GuestMode",
+        //                         false,
+        //                         "When enabled, a new guest account will generate every time you start the game, allowing you to bypass account bans and PUID detection");
 
-        spoofDeviceId = Config.Bind("McFlurryMenu.Privacy",
-                                "HideDeviceId",
-                                true,
-                                "When enabled, it will hide your unique deviceId");
+        // guestFriendCode = Config.Bind("MalumMenu.GuestMode",
+        //                         "FriendName",
+        //                         "",
+        //                         "The username that will be used when setting a friend code for your guest account. IMPORTANT: Can only be used with GuestMode, needs to be ≤ 10 characters, and cannot include special characters/discriminator (#1234)");
 
-        noTelemetry = Config.Bind("McFlurryMenu.Privacy",
-                                "NoTelemetry",
-                                true,
-                                "When enabled, it will stop Among Us from collecting analytics");
+        spoofLevel = Config.Bind("MalumMenu.Spoofing",
+                                "Level",
+                                "",
+                                "A custom player level to display to others in online games to hide your actual platform. IMPORTANT: Custom levels can only be within 1 and 100001. Decimal numbers will not work");
 
-        // Passives are enabled by default
-        CheatToggles.unlockFeatures = CheatToggles.freeCosmetics = CheatToggles.avoidPenalties = true;
+        spoofPlatform = Config.Bind("MalumMenu.Spoofing",
+                                "Platform",
+                                "",
+                                "A custom gaming platform to display to others in online lobbies to hide your actual platform. List of supported platforms: https://skeld.js.org/enums/_skeldjs_constant.Platform.html");
 
-        Harmony.PatchAll();
+        spoofDeviceId = Config.Bind("MalumMenu.Privacy",
+                                "HideDeviceId",
+                                true,
+                                "When enabled, it will hide your unique deviceId from Among Us, which could potentially help bypass hardware bans in the future");
 
-        // UI Initialization
-        menuUI = AddComponent<MenuUI>();
-        consoleUI = AddComponent<ConsoleUI>();
-        rolesUI = AddComponent<RolesUI>();
-        doorsUI = AddComponent<DoorsUI>();
-        tasksUI = AddComponent<TasksUI>();
-        protectUI = AddComponent<ProtectUI>();
+        noTelemetry = Config.Bind("MalumMenu.Privacy",
+                                "NoTelemetry",
+                                true,
+                                "When enabled, it will stop Among Us from collecting analytics of your games and sending them to Innersloth using Unity Analytics");
 
-        keybindListener = AddComponent<KeybindListener>();
+        // Passives are enabled by default
+        CheatToggles.unlockFeatures = CheatToggles.freeCosmetics = CheatToggles.avoidPenalties = true;
 
-        if (noTelemetry.Value)
-        {
-            Analytics.enabled = false;
-            Analytics.deviceStatsEnabled = false;
-            PerformanceReporting.enabled = false;
-        }
+        Harmony.PatchAll();
 
-        if (autoLoadProfile.Value)
-        {
-            CheatToggles.LoadTogglesFromProfile();
-        }
+        // UI
+        menuUI = AddComponent<MenuUI>();
+        consoleUI = AddComponent<ConsoleUI>();
+        rolesUI = AddComponent<RolesUI>();
+        doorsUI = AddComponent<DoorsUI>();
+        tasksUI = AddComponent<TasksUI>();
+        protectUI = AddComponent<ProtectUI>();
 
-        SceneManager.add_sceneLoaded((Action<Scene, LoadSceneMode>) ((scene, _) =>
-        {
-            if (scene.name == "MainMenu" && !(inStealthMode || isPanicked))
-            {
-                if (!supportedAU.Contains(Application.version))
-                {
-                    // Updated the warning message text
-                    Utils.ShowPopup("\nThis version of McFlurryMenu and this version of Among Us are incompatible\n\nInstall the right version to avoid problems");
-                }
-            }
-        }));
-    }
+        // Components
+        keybindListener = AddComponent<KeybindListener>();
+
+        // Disables Telemetry (haven't fully tested if it works, but according to Unity docs it should)
+        if (noTelemetry.Value)
+        {
+            Analytics.enabled = false;
+            Analytics.deviceStatsEnabled = false;
+            PerformanceReporting.enabled = false;
+        }
+
+        // Load profile on start
+        if (autoLoadProfile.Value)
+        {
+            CheatToggles.LoadTogglesFromProfile();
+        }
+
+        SceneManager.add_sceneLoaded((Action<Scene, LoadSceneMode>) ((scene, _) =>
+        {
+            if (scene.name == "MainMenu" && !(inStealthMode || isPanicked))
+            {
+                // Warns about unsupported AU versions
+                if (!supportedAU.Contains(Application.version))
+                {
+                    Utils.ShowPopup("\nThis version of McFlurryMenu and this version of Among Us are incompatible\n\nInstall the right version to avoid problems");
+                }
+            }
+        }));
+    }
 }
