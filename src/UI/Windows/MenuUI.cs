@@ -146,7 +146,7 @@ public class MenuUI : MonoBehaviour
             MalumCheats.StopShipAnimCheats();
         }
 
-        if(!Utils.isHost && !Utils.isFreePlay)
+        if(!Utils.isFreePlay)
         {
             CheatToggles.killAll = false;
             CheatToggles.telekillPlayer = false;
