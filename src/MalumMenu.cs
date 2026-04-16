@@ -27,7 +27,7 @@ public partial class MalumMenu : BasePlugin
     public static ProtectUI protectUI;
     public static KeybindListener keybindListener;
 
-    public static string malumVersion = "1.p.p";
+    public static string malumVersion = "1.0.0";
     public static List<string> supportedAU = new List<string> { "2026.2.24", "2026.3.17", "2026.3.31" };
     public static bool isPanicked = false;
     public static bool inStealthMode = false;
@@ -150,7 +150,7 @@ public partial class MalumMenu : BasePlugin
                 // Warns about unsupported AU versions
                 if (!supportedAU.Contains(Application.version))
                 {
-                    Utils.ShowPopup("\nThis version of MalumMenu and this version of Among Us are incompatible\n\nInstall the right version to avoid problems");
+                    Utils.ShowPopup("\nThis version of McFlurryMenu and this version of Among Us are incompatible\n\nInstall the right version to avoid problems");
                 }
             }
         }));
