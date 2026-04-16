@@ -11,8 +11,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 
 namespace MalumMenu;
-[BepInPlugin("com.mcflurry.mcflurrymenu", "McFlurryMenu", "1.0.0")]
-//[BepInAutoPlugin]
+//[BepInPlugin("com.mcflurry.mcflurrymenu", "McFlurryMenu", "1.0.0")]
+[BepInAutoPlugin]
 [BepInProcess("Among Us.exe")]
 public partial class MalumMenu : BasePlugin
 {
