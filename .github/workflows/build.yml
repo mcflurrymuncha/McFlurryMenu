@@ -3,15 +3,15 @@ name: Build and Release DLL
 on:
   push:
     tags:
-      - 'v*' # Triggers when you push a tag like v1.0.1
+      - 'v*' 
     branches:
-    - main
+      - main
 
 jobs:
   build-and-release:
     runs-on: windows-latest
     permissions:
-      contents: write # Needed to create the release
+      contents: write 
 
     steps:
       - name: Checkout Code
@@ -20,19 +20,25 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' # Change to your project's version if different
+          dotnet-version: '8.0.x' 
 
       - name: Restore Dependencies
         run: dotnet restore
 
       - name: Build DLL
-        # This compiles the project and puts the DLL in a clean folder named 'out'
         run: dotnet build --configuration Release --output ./out
 
+      - name: Upload Build Artifact
+        # This makes the file appear in the "Summary" page of your GitHub Action
+        uses: actions/upload-artifact@v4
+        with:
+          name: McFlurryMenu-Binary
+          path: ./out/McFlurryMenu.dll
+
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          # Replace 'YourProjectName.dll' with the actual name of your file
           files: ./out/McFlurryMenu.dll
           generate_release_notes: true
         env:
