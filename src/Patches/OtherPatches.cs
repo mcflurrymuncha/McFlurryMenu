@@ -92,11 +92,11 @@ public static class VersionShower_Start
 
         if (MalumMenu.supportedAU.Contains(Application.version)) // Checks if Among Us version is supported
         {
-            __instance.text.text =  $"MalumMenu v{MalumMenu.malumVersion} (v{Application.version})"; // Supported
+            __instance.text.text =  $"McFlurryMenu v{MalumMenu.malumVersion} (<color=pink>v{Application.version}<color>)"; // Supported
         }
         else
         {
-            __instance.text.text =  $"MalumMenu v{MalumMenu.malumVersion} (<color=red>v{Application.version}</color>)"; // Unsupported
+            __instance.text.text =  $"McFlurryMenu v{MalumMenu.malumVersion} (<color=orange>v{Application.version}</color>)"; // Unsupported
         }
     }
 }
@@ -120,12 +120,12 @@ public static class PingTracker_Update
         {
             __instance.aspectPosition.DistanceFromEdge = new Vector3(-0.21f, 0.50f, 0f);
 
-            __instance.text.text = $"MalumMenu by scp222thj & Astral ~ {Utils.GetColoredPingText(AmongUsClient.Instance.Ping)}";
+            __instance.text.text = $"McFlurryMenu V1 ~ {Utils.GetColoredPingText(AmongUsClient.Instance.Ping)}";
 
             return;
         }
 
-        __instance.text.text = $"MalumMenu by scp222thj & Astral\n{Utils.GetColoredPingText(AmongUsClient.Instance.Ping)}";
+        __instance.text.text = $"McFlurryMenu V1 \n{Utils.GetColoredPingText(AmongUsClient.Instance.Ping)}";
 
     }
 }
