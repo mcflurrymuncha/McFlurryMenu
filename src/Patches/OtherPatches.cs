@@ -318,14 +318,12 @@ public static class IntroCutscene_CoBegin
 [HarmonyPatch(typeof(AprilFoolsMode), nameof(AprilFoolsMode.ShouldShowAprilFoolsToggle))]
 public static class AprilFoolsMode_ShouldShowAprilFoolsToggle
 {
-    // Prefix patch of AprilFoolsMode.ShouldShowAprilFoolsToggle to enable April Fools features
-    public static bool Prefix(ref bool __result)
+    // Postfix patch of AprilFoolsMode.ShouldShowAprilFoolsToggle to enable April Fools features
+    public static void Postfix(ref bool __result)
     {
-        if (!CheatToggles.spoofAprilFoolsDate) return true;
+        if (!CheatToggles.spoofAprilFoolsDate) return;
 
         __result = true;
-
-        return false;
     }
 }
 
