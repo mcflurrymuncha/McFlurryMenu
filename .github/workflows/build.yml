@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*' # Triggers when you push a tag like v1.0.1
+    branches:
+    - main
 
 jobs:
   build-and-release:
