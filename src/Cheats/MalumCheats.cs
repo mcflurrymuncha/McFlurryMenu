@@ -14,14 +14,11 @@ public static class MalumCheats
     {
         if (!CheatToggles.closeMeeting) return;
 
-        if (Utils.isMeeting) // Closes MeetingHud window if it's open
+        if (Utils.isMeeting) 
         {
-
-            // Destroy MeetingHud window gameobject
             MeetingHud.Instance.DespawnOnDestroy = false;
             Object.Destroy(MeetingHud.Instance.gameObject);
 
-            // Gameplay must be reenabled
             DestroyableSingleton<HudManager>.Instance.StartCoroutine(DestroyableSingleton<HudManager>.Instance.CoFadeFullScreen(Color.black, Color.clear, 0.2f, false));
             PlayerControl.LocalPlayer.SetKillTimer(GameManager.Instance.LogicOptions.GetKillCooldown());
             ShipStatus.Instance.EmergencyCooldown = GameManager.Instance.LogicOptions.GetEmergencyCooldown();
@@ -29,9 +26,8 @@ public static class MalumCheats
             DestroyableSingleton<HudManager>.Instance.SetMapButtonEnabled(true);
             DestroyableSingleton<HudManager>.Instance.SetHudActive(true);
             ControllerManager.Instance.CloseAndResetAll();
-
         }
-        else if (ExileController.Instance) // Ends exile cutscene if it's playing
+        else if (ExileController.Instance)
         {
             ExileController.Instance.ReEnableGameplay();
             ExileController.Instance.WrapUp();
@@ -46,6 +42,7 @@ public static class MalumCheats
 
         if (Utils.isMeeting)
         {
+            // BYPASS: Direct RPC call to skip
             MeetingHud.Instance.RpcVotingComplete(new Il2CppStructArray<MeetingHud.VoterState>(0L), null, true);
         }
 
@@ -56,15 +53,14 @@ public static class MalumCheats
     {
         if (!CheatToggles.callMeeting) return;
 
-        if (Utils.isHost)
-        {
-            // Same as PlayerControl.ReportDeadBody but without additional checks
+        // BYPASS: Removed 'if (Utils.isHost)' check. 
+        // We attempt to force a meeting even if we aren't at a button.
+        try {
             MeetingRoomManager.Instance.AssignSelf(PlayerControl.LocalPlayer, null);
             DestroyableSingleton<HudManager>.Instance.OpenMeetingRoom(PlayerControl.LocalPlayer);
             PlayerControl.LocalPlayer.RpcStartMeeting(null);
-        }
-        else
-        {
+        } catch {
+            // Fallback to standard report logic if the force method fails
             PlayerControl.LocalPlayer.CmdReportDeadBody(null);
         }
 
@@ -75,7 +71,8 @@ public static class MalumCheats
     {
         if (!CheatToggles.forceStartGame) return;
 
-        if (Utils.isHost && Utils.isLobby)
+        // BYPASS: Removed 'Utils.isHost' check.
+        if (Utils.isLobby)
         {
             AmongUsClient.Instance.SendStartGame();
         }
@@ -120,12 +117,10 @@ public static class MalumCheats
     {
         if (CheatToggles.endlessVentTime)
         {
-            // Makes vent time incredibly long (float.MaxValue) so that it never ends
             engineerRole.inVentTimeRemaining = float.MaxValue;
         }
         else if (engineerRole.inVentTimeRemaining > engineerRole.GetCooldown())
         {
-            // Vent time is reset to normal value after the cheat is disabled
             engineerRole.inVentTimeRemaining = engineerRole.GetCooldown();
         }
 
@@ -134,7 +129,6 @@ public static class MalumCheats
             if (engineerRole.cooldownSecondsRemaining > 0f)
             {
                 engineerRole.cooldownSecondsRemaining = 0f;
-
                 DestroyableSingleton<HudManager>.Instance.AbilityButton.ResetCoolDown();
                 DestroyableSingleton<HudManager>.Instance.AbilityButton.SetCooldownFill(0f);
             }
@@ -145,14 +139,11 @@ public static class MalumCheats
     {
         if (CheatToggles.endlessSsDuration)
         {
-            // Makes shapeshift duration so incredibly long (float.MaxValue) so that it never ends
             shapeshifterRole.durationSecondsRemaining = float.MaxValue;
         }
         else if (shapeshifterRole.durationSecondsRemaining > GameManager.Instance.LogicOptions.GetRoleFloat(FloatOptionNames.ShapeshifterDuration))
         {
-            // Shapeshift duration is reset to normal value after the cheat is disabled
             shapeshifterRole.durationSecondsRemaining = GameManager.Instance.LogicOptions.GetRoleFloat(FloatOptionNames.ShapeshifterDuration);
-
         }
     }
 
@@ -165,12 +156,10 @@ public static class MalumCheats
 
         if (CheatToggles.endlessBattery)
         {
-            // Makes vitals battery so incredibly long (float.MaxValue) so that it never ends
             scientistRole.currentCharge = float.MaxValue;
         }
         else if (scientistRole.currentCharge > scientistRole.RoleCooldownValue)
         {
-            // Battery charge is reset to normal value after the cheat is disabled
             scientistRole.currentCharge = scientistRole.RoleCooldownValue;
         }
     }
@@ -193,30 +182,22 @@ public static class MalumCheats
 
         if (CheatToggles.endlessTracking)
         {
-            // Makes vitals battery so incredibly long (float.MaxValue) so that it never ends
             trackerRole.durationSecondsRemaining = float.MaxValue;
         }
         else if (trackerRole.durationSecondsRemaining > GameManager.Instance.LogicOptions.GetRoleFloat(FloatOptionNames.TrackerDuration))
         {
-            // Battery charge is reset to normal value after the cheat is disabled
             trackerRole.durationSecondsRemaining = GameManager.Instance.LogicOptions.GetRoleFloat(FloatOptionNames.TrackerDuration);
         }
     }
 
     public static void UseVentCheat(HudManager hudManager)
     {
-        // try-catch to prevent errors when role is null
         try
         {
-
-			// Engineers & Impostors don't need this cheat so it is disabled for them
-			// Ghost venting causes issues so it is also disabled
-
-			if (!PlayerControl.LocalPlayer.Data.Role.CanVent && !PlayerControl.LocalPlayer.Data.IsDead)
+            if (!PlayerControl.LocalPlayer.Data.Role.CanVent && !PlayerControl.LocalPlayer.Data.IsDead)
             {
-				hudManager.ImpostorVentButton.gameObject.SetActive(CheatToggles.unlockVents);
-			}
-
+                hudManager.ImpostorVentButton.gameObject.SetActive(CheatToggles.unlockVents);
+            }
         } catch { }
     }
 
@@ -225,10 +206,8 @@ public static class MalumCheats
         try
         {
             if (!CheatToggles.walkInVents) return;
-
             PlayerControl.LocalPlayer.inVent = false;
             PlayerControl.LocalPlayer.moveable = true;
-
         } catch { }
     }
 
@@ -254,7 +233,6 @@ public static class MalumCheats
         }
         else
         {
-            // Kill all players by sending a successful MurderPlayer RPC call
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 Utils.MurderPlayer(player, MurderResultFlags.Succeeded);
@@ -274,7 +252,6 @@ public static class MalumCheats
         }
         else
         {
-            // Kill all players by sending a successful MurderPlayer RPC call
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 if (player.Data.Role.TeamType == RoleTeamTypes.Crewmate)
@@ -297,7 +274,6 @@ public static class MalumCheats
         }
         else
         {
-            // Kill all players by sending a successful MurderPlayer RPC call
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 if (player.Data.Role.TeamType == RoleTeamTypes.Impostor)
@@ -312,13 +288,13 @@ public static class MalumCheats
 
     public static void ProtectCheat()
     {
-        if (!Utils.isHost || Utils.isLobby) return;
+        // BYPASS: Removed 'if (!Utils.isHost)' check.
+        if (Utils.isLobby) return;
 
         foreach (var player in ProtectUI.playersToProtect)
         {
-            if (player.protectedByGuardianId == -1) // -1 means no protection is currently active
+            if (player.protectedByGuardianId == -1) 
             {
-                //PlayerControl.LocalPlayer.TurnOnProtection(true, PlayerControl.LocalPlayer.cosmetics.ColorId, PlayerControl.LocalPlayer.PlayerId);
                 PlayerControl.LocalPlayer.RpcProtectPlayer(player, PlayerControl.LocalPlayer.cosmetics.ColorId);
             }
         }
@@ -329,7 +305,6 @@ public static class MalumCheats
         if (PlayerControl.LocalPlayer?.NetTransform == null || Camera.main == null) return;
         if (!CheatToggles.teleportCursor) return;
 
-        // Teleport player to cursor's in-world position on right-click
         if (Input.GetMouseButtonDown(1))
         {
             PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(Camera.main.ScreenToWorldPoint(Input.mousePosition));
@@ -340,9 +315,7 @@ public static class MalumCheats
     {
         try
         {
-
             PlayerControl.LocalPlayer.Collider.enabled = !(CheatToggles.noClip || PlayerControl.LocalPlayer.onLadder);
-
         } catch { }
     }
 
@@ -372,7 +345,6 @@ public static class MalumCheats
     {
         if (CheatToggles.animPet && Utils.isPlayer && PlayerControl.LocalPlayer.cosmetics != null && PlayerControl.LocalPlayer.cosmetics.CurrentPet != null)
         {
-            // Don't move LocalPlayer, just send the RPC so others see the petting animation
             RpcPetMessage rpcMessage = new(PlayerControl.LocalPlayer.MyPhysics.NetId,
                 PlayerControl.LocalPlayer.cosmetics.CurrentPet.PettingPlayerPosition,
                 PlayerControl.LocalPlayer.cosmetics.CurrentPet.transform.position);
@@ -380,9 +352,7 @@ public static class MalumCheats
         }
 
         byte mapId = Utils.GetCurrentMapID();
-
         if (mapId == byte.MaxValue) return;
-
         var map = (MapNames)mapId;
 
         if (CheatToggles.animShields)
@@ -412,7 +382,6 @@ public static class MalumCheats
             {
                 Utils.ForcePlayAnimation((byte)TaskTypes.EmptyGarbage);
             }
-
             CheatToggles.animEmptyGarbage = false;
         }
 
@@ -420,13 +389,11 @@ public static class MalumCheats
         {
             if (CheatToggles.animCamsInUse && !_isCamsAnimActive)
             {
-                // ShipStatus.Instance.UpdateSystem(SystemTypes.Security, PlayerControl.LocalPlayer, (byte)(CheatToggles.animCamsInUse ? 1 : 0));
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Security, 1);
                 _isCamsAnimActive = true;
             }
             else if (!CheatToggles.animCamsInUse && _isCamsAnimActive)
             {
-                // Turn off cams if the cheat was used before and is now disabled
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Security, 0);
                 _isCamsAnimActive = false;
             }
@@ -444,10 +411,6 @@ public static class MalumCheats
         CheatToggles.animEmptyGarbage = false;
         CheatToggles.animMedScan = false;
         CheatToggles.animCamsInUse = false;
-
-        // This ensures cams and scan animations don't remain marked as active if the player
-        // disconnects while the toggles are on (as this may cause unusual RPCs in lobbies)
-
         _isCamsAnimActive = false;
         _isScanAnimActive = false;
     }
