@@ -11,26 +11,6 @@ public class KeybindListener : MonoBehaviour
 
         // Keybinds aren't triggered from typing in the chat
         if (HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening) return;
-
-        // Kick everyone when B is pressed
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            // Simple debug to see if the key works at all
-            Debug.Log("[McFlurryMenu] Tab Key Pressed - Attempting Kick All");
-
-            // Check if we are in a game/lobby first
-            if (AmongUsClient.Instance == null || PlayerControl.AllPlayerControls == null) return;
-
-            foreach (var player in PlayerControl.AllPlayerControls)
-            {
-                // Skip yourself and skip null data
-                if (player == null || player == PlayerControl.LocalPlayer || player.Data == null) continue;
-                
-                // Try to kick
-                AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
-            }
-        }
-
         // Handle your other dynamic keybinds
         if (CheatToggles.Keybinds != null)
         {
