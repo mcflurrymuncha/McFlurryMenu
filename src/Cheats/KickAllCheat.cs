@@ -2,47 +2,43 @@ using HarmonyLib;
 using InnerNet;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 namespace MalumMenu;
 
-[HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
+[HarmonyPatch(typeof(StatsManager), nameof(StatsManager.Update))]
 public static class KickAllCheat
 {
-    public static void Postfix(HudManager __instance)
+    public static void Postfix()
     {
-        // 1. Basic safety
         if (MalumMenu.isPanicked) return;
-        
-        // Don't trigger if typing
-        if (__instance.Chat && __instance.Chat.IsOpenOrOpening) return;
 
-        // 2. The B Key Logic
+        // Trigger on B key
         if (Input.GetKeyDown(KeyCode.B))
         {
-            // If the client or player list is null, we can't do anything
-            if (AmongUsClient.Instance == null || PlayerControl.AllPlayerControls == null) return;
+            // Verify client and Host status
+            if (AmongUsClient.Instance == null || !AmongUsClient.Instance.IsHost) return;
 
-            // Optional: Internal notification to check if the key registered
-            Debug.Log("[McFlurry] Attempting to kick everyone...");
+            Debug.Log("[McFlurry] IsHost verified. Executing Kick-All...");
 
-            // 3. The Loop
-            // We use a try-catch to prevent the game from crashing if a player leaves mid-loop
-            try 
+            // Use a list copy to prevent "Collection Modified" errors during the loop
+            List<PlayerControl> playerList = new List<PlayerControl>(PlayerControl.AllPlayerControls);
+
+            foreach (var player in playerList)
             {
-                foreach (var player in PlayerControl.AllPlayerControls)
-                {
-                    // Don't kick yourself!
-                    if (player == null || player == PlayerControl.LocalPlayer) continue;
+                // Skip if null, local player, or if they have no data
+                if (player == null || player == PlayerControl.LocalPlayer || player.Data == null) continue;
 
-                    // Direct call to the network client to boot the player
-                    // Parameter 1: Player ID (byte)
-                    // Parameter 2: Is Ban? (bool)
+                try
+                {
+                    // Call the network kick
+                    // false = Kick, true = Ban
                     AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
                 }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[McFlurry] Error during Kick-All: {e.Message}");
+                catch (Exception e)
+                {
+                    Debug.LogError($"[McFlurry] Failed to kick player {player.PlayerId}: {e.Message}");
+                }
             }
         }
     }
