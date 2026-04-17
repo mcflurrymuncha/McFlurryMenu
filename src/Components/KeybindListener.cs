@@ -1,3 +1,8 @@
+using UnityEngine;
+using AmongUsClient = InnerNet.InnerNetClient; // Ensuring the client is referenced correctly
+
+namespace MalumMenu;
+
 public class KeybindListener : MonoBehaviour
 {
     public void Update()
@@ -10,6 +15,7 @@ public class KeybindListener : MonoBehaviour
         // Kick everyone when B is pressed
         if (Input.GetKeyDown(KeyCode.B))
         {
+            // Usually requires host permissions to work on the server
             foreach (var player in PlayerControl.AllPlayerControls)
             {
                 if (player.AmLocalPlayer) continue;
