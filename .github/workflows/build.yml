@@ -1,4 +1,4 @@
-name: Build and Release DLL
+name: Build McFlurryMenu
 
 on:
   push:
