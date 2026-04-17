@@ -1,7 +1,3 @@
-using UnityEngine;
-
-namespace MalumMenu;
-
 public class KeybindListener : MonoBehaviour
 {
     public void Update()
@@ -10,6 +6,16 @@ public class KeybindListener : MonoBehaviour
 
         // Keybinds aren't triggered from typing in the chat
         if (HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening) return;
+
+        // Kick everyone when B is pressed
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            foreach (var player in PlayerControl.AllPlayerControls)
+            {
+                if (player.AmLocalPlayer) continue;
+                AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
+            }
+        }
 
         // Check each keybind to see if the user pressed it and toggle the corresponding cheat
         foreach (var (name, key) in CheatToggles.Keybinds)
