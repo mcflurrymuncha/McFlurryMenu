@@ -1,36 +1,48 @@
 using HarmonyLib;
 using InnerNet;
 using UnityEngine;
+using System;
 
 namespace MalumMenu;
 
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
 public static class KickAllCheat
 {
-    // HUD Update runs every frame while the game UI is active
-    public static void Postfix()
+    public static void Postfix(HudManager __instance)
     {
-        // 1. Safety Checks
+        // 1. Basic safety
         if (MalumMenu.isPanicked) return;
         
-        // Don't trigger if the chat is open
-        if (HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening) return;
+        // Don't trigger if typing
+        if (__instance.Chat && __instance.Chat.IsOpenOrOpening) return;
 
         // 2. The B Key Logic
         if (Input.GetKeyDown(KeyCode.B))
         {
-            // Ensure we are in a game/lobby and have host authority
-            if (AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost)
+            // If the client or player list is null, we can't do anything
+            if (AmongUsClient.Instance == null || PlayerControl.AllPlayerControls == null) return;
+
+            // Optional: Internal notification to check if the key registered
+            Debug.Log("[McFlurry] Attempting to kick everyone...");
+
+            // 3. The Loop
+            // We use a try-catch to prevent the game from crashing if a player leaves mid-loop
+            try 
             {
-                // Iterate through all players
                 foreach (var player in PlayerControl.AllPlayerControls)
                 {
-                    // Skip yourself and invalid players
+                    // Don't kick yourself!
                     if (player == null || player == PlayerControl.LocalPlayer) continue;
 
-                    // Send the kick request (false = kick, true = ban)
+                    // Direct call to the network client to boot the player
+                    // Parameter 1: Player ID (byte)
+                    // Parameter 2: Is Ban? (bool)
                     AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[McFlurry] Error during Kick-All: {e.Message}");
             }
         }
     }
