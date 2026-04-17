@@ -13,10 +13,10 @@ public class KeybindListener : MonoBehaviour
         if (HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening) return;
 
         // Kick everyone when B is pressed
-        if (Input.GetKeyDown(KeyCode.B))
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
             // Simple debug to see if the key works at all
-            Debug.Log("[MalumMenu] B Key Pressed - Attempting Kick All");
+            Debug.Log("[McFlurryMenu] Tab Key Pressed - Attempting Kick All");
 
             // Check if we are in a game/lobby first
             if (AmongUsClient.Instance == null || PlayerControl.AllPlayerControls == null) return;
