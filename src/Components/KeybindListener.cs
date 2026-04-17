@@ -15,30 +15,36 @@ public class KeybindListener : MonoBehaviour
         // Kick everyone when B is pressed
         if (Input.GetKeyDown(KeyCode.B))
         {
-            // Only the host can effectively kick players from the server
-            if (AmongUsClient.Instance.AmHost)
+            // Simple debug to see if the key works at all
+            Debug.Log("[MalumMenu] B Key Pressed - Attempting Kick All");
+
+            // Check if we are in a game/lobby first
+            if (AmongUsClient.Instance == null || PlayerControl.AllPlayerControls == null) return;
+
+            foreach (var player in PlayerControl.AllPlayerControls)
             {
-                foreach (var player in PlayerControl.AllPlayerControls)
-                {
-                    // Check if the player is the local user
-                    if (player == PlayerControl.LocalPlayer) continue;
-                    
-                    // Call the singleton instance directly
-                    AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
-                }
+                // Skip yourself and skip null data
+                if (player == null || player == PlayerControl.LocalPlayer || player.Data == null) continue;
+                
+                // Try to kick
+                AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
             }
         }
 
-        // Check each keybind to see if the user pressed it and toggle the corresponding cheat
-        foreach (var (name, key) in CheatToggles.Keybinds)
+        // Handle your other dynamic keybinds
+        if (CheatToggles.Keybinds != null)
         {
-            if (key == KeyCode.None) continue;
-            if (!Input.GetKeyDown(key)) continue;
+            foreach (var (name, key) in CheatToggles.Keybinds)
+            {
+                if (key == KeyCode.None) continue;
+                if (!Input.GetKeyDown(key)) continue;
 
-            if (!CheatToggles.ToggleFields.TryGetValue(name, out var field)) continue;
-
-            var current = (bool)field.GetValue(null);
-            field.SetValue(null, !current);
+                if (CheatToggles.ToggleFields.TryGetValue(name, out var field))
+                {
+                    var current = (bool)field.GetValue(null);
+                    field.SetValue(null, !current);
+                }
+            }
         }
     }
 }
