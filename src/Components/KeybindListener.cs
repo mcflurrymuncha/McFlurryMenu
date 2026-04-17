@@ -1,5 +1,5 @@
 using UnityEngine;
-using AmongUsClient = InnerNet.InnerNetClient; // Ensuring the client is referenced correctly
+using InnerNet;
 
 namespace MalumMenu;
 
@@ -15,11 +15,17 @@ public class KeybindListener : MonoBehaviour
         // Kick everyone when B is pressed
         if (Input.GetKeyDown(KeyCode.B))
         {
-            // Usually requires host permissions to work on the server
-            foreach (var player in PlayerControl.AllPlayerControls)
+            // Only the host can effectively kick players from the server
+            if (AmongUsClient.Instance.AmHost)
             {
-                if (player.AmLocalPlayer) continue;
-                AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
+                foreach (var player in PlayerControl.AllPlayerControls)
+                {
+                    // Check if the player is the local user
+                    if (player == PlayerControl.LocalPlayer) continue;
+                    
+                    // Call the singleton instance directly
+                    AmongUsClient.Instance.KickPlayer(player.PlayerId, false);
+                }
             }
         }
 
