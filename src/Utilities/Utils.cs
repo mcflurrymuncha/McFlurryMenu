@@ -213,23 +213,6 @@ public static class Utils
         PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(position);
     }
 
-    public static void MurderPlayer(PlayerControl target, MurderResultFlags result)
-    {
-        if (isFreePlay)
-        {
-            PlayerControl.LocalPlayer.MurderPlayer(target, MurderResultFlags.Succeeded);
-            return;
-        }
-
-        foreach (var item in PlayerControl.AllPlayerControls)
-        {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, AmongUsClient.Instance.GetClientIdFromCharacter(item));
-            writer.WriteNetObject(target);
-            writer.Write((int)result);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-        }
-    }
-
     public static void CompleteTask(PlayerTask task)
     {
         if (isFreePlay)
