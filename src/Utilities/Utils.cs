@@ -427,7 +427,7 @@ public static class Utils
         var player = AmongUsClient.Instance.GetClientFromPlayerInfo(playerInfo);
         
         // MODIFIED: Logic now uses our forced 'isHost' check for local player's visual display
-        var host = isHost ? AmongUsClient.Instance.GetHost() : AmongUsClient.Instance.GetHost();
+        var host = AmongUsClient.Instance.GetHost();
         var level = playerInfo.PlayerLevel + 1;
 
         var platform = "Unknown";
@@ -436,7 +436,7 @@ public static class Utils
         var roleColor = ColorUtility.ToHtmlStringRGB(playerInfo.Role.TeamColor);
 
         // MODIFIED: Host string logic simplified
-        var hostString = player.isHost ? "Host - " : "";
+        var hostString = (player == AmongUsClient.Instance.GetHost()) ? "Host - " : "";
 
         if (CheatToggles.seeRoles)
         {
