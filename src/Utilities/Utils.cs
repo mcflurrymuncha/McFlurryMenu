@@ -436,7 +436,7 @@ public static class Utils
         var roleColor = ColorUtility.ToHtmlStringRGB(playerInfo.Role.TeamColor);
 
         // MODIFIED: Host string logic simplified
-        var hostString = player.IsHost ? "Host - " : "";
+        var hostString = player.isHost ? "Host - " : "";
 
         if (CheatToggles.seeRoles)
         {
