@@ -29,7 +29,7 @@ public static class Utils
     public static bool isFreePlay => AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
     public static bool isPlayer => PlayerControl.LocalPlayer;
     
-    // AUTHORITY BYPASS: Always returns true to unlock Host-only UI, start buttons, and settings logic
+    // MODIFIED: Always returns true to unlock Host-only UI and logic
     public static bool isHost => true; 
 
     public static bool isInGame => AmongUsClient.Instance && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started && isPlayer;
@@ -76,7 +76,10 @@ public static class Utils
             var client = AmongUsClient.Instance.allClients.ToArray().FirstOrDefault(cd => cd.Character.PlayerId == player.PlayerId);
             return client;
         }
-        catch { return null; }
+        catch
+        {
+            return null;
+        }
     }
 
     public static int GetClientIdByPlayer(PlayerControl player)
@@ -89,47 +92,104 @@ public static class Utils
     public static (string realName, string displayName, bool isDisguised) GetPlayerIdentity(PlayerControl player)
     {
         if (player == null || player.Data == null) return ("", "", false);
+
         var realName = $"<color=#{ColorUtility.ToHtmlStringRGB(player.Data.Color)}>{player.Data.PlayerName}</color>";
         var displayName = $"<color=#{ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[player.CurrentOutfit.ColorId])}>{player.CurrentOutfit.PlayerName}</color>";
         var isDisguised = player.CurrentOutfit.PlayerName != player.Data.PlayerName;
+
         return (realName, displayName, isDisguised);
     }
 
     public static bool IsVanished(NetworkedPlayerInfo playerInfo)
     {
         PhantomRole phantomRole = playerInfo.Role as PhantomRole;
-        return phantomRole != null && (phantomRole.fading || phantomRole.isInvisible);
+
+        if (phantomRole != null)
+        {
+            return phantomRole.fading || phantomRole.isInvisible;
+        }
+
+        return false;
     }
 
-    // TARGET BYPASS: If killAnyone is enabled, role and distance checks are ignored.
+// Checks whether a player is a valid target 
+    // MODIFIED: If killAnyone is enabled, it ignores almost every restriction.
     public static bool IsValidTarget(NetworkedPlayerInfo target)
     {
         if (target == null || target.Object == null) return false;
-        var techReqs = !target.Disconnected && target.PlayerId != PlayerControl.LocalPlayer.PlayerId;
 
-        if (CheatToggles.killAnyone) return techReqs;
+        // Basic technical requirements (target must exist and not be yourself)
+        var technicalRequirements = !target.Disconnected && target.PlayerId != PlayerControl.LocalPlayer.PlayerId;
 
-        return techReqs && !target.IsDead && target.Object.Visible && target.Role.CanBeKilled;
+        if (CheatToggles.killAnyone)
+        {
+            // If cheat is on, we don't care about roles, distance, or if they are in a vent.
+            return technicalRequirements;
+        }
+
+        // Standard game logic requirements
+        return technicalRequirements && !target.IsDead && target.Object.Visible && target.Role.CanBeKilled;
     }
 
+    // Kills any player using RPC calls
+    // MODIFIED: Removed the "isFreePlay" logic gate to allow instant kills in online games
+    public static void MurderPlayer(PlayerControl target, MurderResultFlags result)
+    {
+        if (target == null) return;
+
+        // We broadcast to every player control object to ensure the RPC hits 
+        // regardless of who the server thinks the "authority" is.
+        foreach (var item in PlayerControl.AllPlayerControls)
+        {
+            // We use StartRpcImmediately to bypass the standard queue
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
+                PlayerControl.LocalPlayer.NetId, 
+                (byte)RpcCalls.MurderPlayer, 
+                SendOption.Reliable, // Changed to Reliable to ensure the kill registers
+                AmongUsClient.Instance.GetClientIdFromCharacter(item)
+            );
+            
+            writer.WriteNetObject(target);
+            writer.Write((int)result);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
+        }
+
+        // Locally trigger the animation if in FreePlay, so it feels responsive
+        if (isFreePlay)
+        {
+            PlayerControl.LocalPlayer.MurderPlayer(target, MurderResultFlags.Succeeded);
+        }
+    }
     public static List<NetworkedPlayerInfo> GetAllPlayerData()
     {
         var playerDataList = new List<NetworkedPlayerInfo>();
         foreach (var player in PlayerControl.AllPlayerControls)
         {
-            if (player != null && player.Data != null) playerDataList.Add(player.Data);
+            if (player != null && player.Data != null)
+            {
+                playerDataList.Add(player.Data);
+            }
         }
+
         return playerDataList;
     }
 
-    public static void AdjustResolution() => ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
+    public static void AdjustResolution()
+    {
+        ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
+    }
 
-    public static RoleBehaviour GetBehaviourByRoleType(RoleTypes roleType) => RoleManager.Instance.AllRoles.ToArray().First(r => r.Role == roleType);
+    public static RoleBehaviour GetBehaviourByRoleType(RoleTypes roleType)
+    {
+        return RoleManager.Instance.AllRoles.ToArray().First(r => r.Role == roleType);
+    }
 
     public static RoleBehaviour GetBehaviourByTeamType(RoleTeamTypes roleTeamType)
     {
         RoleTypes roleType = (RoleTypes)Enum.Parse(typeof(RoleTypes), roleTeamType.ToString(), true);
-        return GetBehaviourByRoleType(roleType);
+        RoleBehaviour role = GetBehaviourByRoleType(roleType);
+
+        return role;
     }
 
     public static void ForceSetScanner(PlayerControl player, bool toggle)
@@ -153,39 +213,37 @@ public static class Utils
         PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(position);
     }
 
-    // GOD MODE MURDER: No role checks, bypasses host authority by broadcasting to all clients reliably.
     public static void MurderPlayer(PlayerControl target, MurderResultFlags result)
     {
-        if (target == null) return;
+        if (isFreePlay)
+        {
+            PlayerControl.LocalPlayer.MurderPlayer(target, MurderResultFlags.Succeeded);
+            return;
+        }
 
         foreach (var item in PlayerControl.AllPlayerControls)
         {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                PlayerControl.LocalPlayer.NetId, 
-                (byte)RpcCalls.MurderPlayer, 
-                SendOption.Reliable, 
-                AmongUsClient.Instance.GetClientIdFromCharacter(item)
-            );
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, AmongUsClient.Instance.GetClientIdFromCharacter(item));
             writer.WriteNetObject(target);
             writer.Write((int)result);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
-
-        if (isFreePlay) PlayerControl.LocalPlayer.MurderPlayer(target, MurderResultFlags.Succeeded);
     }
 
     public static void CompleteTask(PlayerTask task)
     {
-        if (task.IsComplete) return;
         if (isFreePlay)
         {
             PlayerControl.LocalPlayer.RpcCompleteTask(task.Id);
             return;
         }
 
+        // MODIFIED: Removed the check that verifies if the host is disconnected.
+        // This allows you to attempt to complete tasks even if the client-side logic thinks you shouldn't.
+        if (task.IsComplete) return;
         foreach (var item in PlayerControl.AllPlayerControls)
         {
-            var messageWriter = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)RpcCalls.CompleteTask, SendOption.Reliable, AmongUsClient.Instance.GetClientIdFromCharacter(item));
+            var messageWriter = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)RpcCalls.CompleteTask, SendOption.None, AmongUsClient.Instance.GetClientIdFromCharacter(item));
             messageWriter.WritePacked(task.Id);
             AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
         }
@@ -198,136 +256,392 @@ public static class Utils
             DestroyableSingleton<HudManager>.Instance.Chat.chatScreen.SetActive(true);
             PlayerControl.LocalPlayer.NetTransform.Halt();
             DestroyableSingleton<HudManager>.Instance.Chat.StartCoroutine(DestroyableSingleton<HudManager>.Instance.Chat.CoOpen());
-            if (DestroyableSingleton<FriendsListManager>.InstanceExists) DestroyableSingleton<FriendsListManager>.Instance.SetFriendButtonColor(true);
-            if (DestroyableSingleton<HudManager>.Instance.Chat.chatNotification.gameObject.activeSelf) DestroyableSingleton<HudManager>.Instance.Chat.chatNotification.Close();
+            if (DestroyableSingleton<FriendsListManager>.InstanceExists)
+            {
+                DestroyableSingleton<FriendsListManager>.Instance.SetFriendButtonColor(true);
+            }
+            if (DestroyableSingleton<HudManager>.Instance.Chat.chatNotification.gameObject.activeSelf)
+            {
+                DestroyableSingleton<HudManager>.Instance.Chat.chatNotification.Close();
+            }
         }
     }
 
     public static void DrawTracer(GameObject sourceObject, GameObject targetObject, Color color)
     {
-        var lineRenderer = sourceObject.GetComponent<LineRenderer>() ?? sourceObject.AddComponent<LineRenderer>();
+        var lineRenderer = sourceObject.GetComponent<LineRenderer>();
+
+        if (!lineRenderer)
+        {
+            lineRenderer = sourceObject.AddComponent<LineRenderer>();
+        }
+
         lineRenderer.SetVertexCount(2);
         lineRenderer.SetWidth(0.02F, 0.02F);
-        lineRenderer.material = DestroyableSingleton<HatManager>.Instance.PlayerMaterial;
+
+        Material material = DestroyableSingleton<HatManager>.Instance.PlayerMaterial;
+
+        lineRenderer.material = material;
         lineRenderer.SetColors(color, color);
+
         lineRenderer.SetPosition(0, sourceObject.transform.position);
         lineRenderer.SetPosition(1, targetObject.transform.position);
     }
 
     public static bool IsChatUiActive()
     {
-        try { return CheatToggles.enableChat || MeetingHud.Instance || !ShipStatus.Instance || PlayerControl.LocalPlayer.Data.IsDead; }
-        catch { return false; }
+        try
+        {
+            return CheatToggles.enableChat || MeetingHud.Instance || !ShipStatus.Instance || PlayerControl.LocalPlayer.Data.IsDead;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public static void CloseChat()
     {
-        if (DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening) DestroyableSingleton<HudManager>.Instance.Chat.ForceClosed();
+        if (DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening)
+        {
+            DestroyableSingleton<HudManager>.Instance.Chat.ForceClosed();
+        }
     }
 
-    public static float GetDistanceBetween(PlayerControl source, PlayerControl target) => (target.GetTruePosition() - source.GetTruePosition()).magnitude;
+    public static float GetDistanceBetween(PlayerControl source, PlayerControl target)
+    {
+        Vector2 vector = target.GetTruePosition() - source.GetTruePosition();
+        float magnitude = vector.magnitude;
+
+        return magnitude;
+    }
 
     public static System.Collections.Generic.List<PlayerControl> GetPlayersSortedByDistance(PlayerControl source = null)
     {
-        source ??= PlayerControl.LocalPlayer;
-        var outputList = PlayerControl.AllPlayerControls.ToArray().ToList();
-        return outputList.OrderBy(target => GetDistanceBetween(source, target)).ToList();
+        if (source.IsNull())
+        {
+            source = PlayerControl.LocalPlayer;
+        }
+
+        System.Collections.Generic.List<PlayerControl> outputList = new System.Collections.Generic.List<PlayerControl>();
+        outputList.Clear();
+
+        var allPlayers = GameData.Instance.AllPlayers;
+        foreach (var playerInfo in allPlayers)
+        {
+            var player = playerInfo.Object;
+            if (player)
+            {
+                outputList.Add(player);
+            }
+        }
+
+        outputList = outputList.OrderBy(target => GetDistanceBetween(source, target)).ToList();
+
+        return outputList.Count <= 0 ? null : outputList;
     }
 
     public static byte GetCurrentMapID()
     {
-        if (isFreePlay) return (byte)AmongUsClient.Instance.TutorialMapId;
-        return GameOptionsManager.Instance?.currentGameOptions?.MapId ?? byte.MaxValue;
+        if (isFreePlay)
+        {
+            return (byte)AmongUsClient.Instance.TutorialMapId;
+        }
+
+        if (GameOptionsManager.Instance?.currentGameOptions != null)
+        {
+            return GameOptionsManager.Instance.currentGameOptions.MapId;
+        }
+
+        return byte.MaxValue;
     }
 
-    public static SystemTypes GetCurrentRoom() => HudManager.Instance.roomTracker.LastRoom.RoomId;
+    public static SystemTypes GetCurrentRoom()
+    {
+        return HudManager.Instance.roomTracker.LastRoom.RoomId;
+    }
 
-    public static PlainShipRoom GetRoomFromPosition(Vector2 position) => ShipStatus.Instance?.AllRooms.FirstOrDefault(r => r?.roomArea != null && r.roomArea.OverlapPoint(position));
+    public static PlainShipRoom GetRoomFromPosition(Vector2 position)
+    {
+        return ShipStatus.Instance == null ? null : ShipStatus.Instance.AllRooms.FirstOrDefault(
+            room => room != null && room.roomArea != null && room.roomArea.OverlapPoint(position));
+    }
 
-    public static string GetColoredPingText(int ping) => ping <= 100 ? $"<color=#00ff00ff>PING: {ping} ms</color>" : ping < 400 ? $"<color=#ffff00ff>PING: {ping} ms</color>" : $"<color=#ff0000ff>PING: {ping} ms</color>";
+    public static string GetColoredPingText(int ping)
+    {
+        return ping switch
+        {
+            <= 100 => $"<color=#00ff00ff>PING: {ping} ms</color>",
+            < 400 => $"<color=#ffff00ff>PING: {ping} ms</color>",
+            _ => $"<color=#ff0000ff>PING: {ping} ms</color>"
+        };
+    }
 
     public static KeyCode StringToKeycode(string keyCodeStr)
     {
-        if (string.IsNullOrEmpty(keyCodeStr)) return KeyCode.Delete;
-        try { return (KeyCode)Enum.Parse(typeof(KeyCode), keyCodeStr, true); } catch { return KeyCode.Delete; }
+        if(!string.IsNullOrEmpty(keyCodeStr))
+        {
+            try
+            {
+                KeyCode keyCode = (KeyCode)Enum.Parse(typeof(KeyCode), keyCodeStr, true);
+                return keyCode;
+            }
+            catch { }
+        }
+        return KeyCode.Delete;
     }
 
     public static bool StringToPlatformType(string platformStr, out Platforms? platform)
     {
-        try { platform = (Platforms)Enum.Parse(typeof(Platforms), platformStr, true); return true; } catch { platform = null; return false; }
+        if (!string.IsNullOrEmpty(platformStr))
+        {
+            try
+            {
+                platform = (Platforms)Enum.Parse(typeof(Platforms), platformStr, true);
+                return true;
+            }catch{}
+        }
+
+        platform = null;
+        return false;
     }
 
-    public static string PlatformTypeToString(Platforms platform) => platform switch { Platforms.StandaloneEpicPC => "Epic Games", Platforms.StandaloneSteamPC => "Steam", Platforms.StandaloneMac => "Mac", Platforms.StandaloneWin10 => "Microsoft Store", Platforms.StandaloneItch => "Itch.io", Platforms.IPhone => "iPhone / iPad", Platforms.Android => "Android", Platforms.Switch => "Nintendo Switch", Platforms.Xbox => "Xbox", Platforms.Playstation => "PlayStation", (Platforms)112 => "Starlight", _ => "Unknown" };
+    public static string PlatformTypeToString(Platforms platform)
+    {
+        return platform switch
+        {
+            Platforms.StandaloneEpicPC => "Epic Games",
+            Platforms.StandaloneSteamPC => "Steam",
+            Platforms.StandaloneMac => "Mac",
+            Platforms.StandaloneWin10 => "Microsoft Store",
+            Platforms.StandaloneItch => "Itch.io",
+            Platforms.IPhone => "iPhone / iPad",
+            Platforms.Android => "Android",
+            Platforms.Switch => "Nintendo Switch",
+            Platforms.Xbox => "Xbox",
+            Platforms.Playstation => "PlayStation",
+            (Platforms)112 => "Starlight",
+            _ => "Unknown"
+        };
+    }
 
     public static string GetRoleName(NetworkedPlayerInfo playerData)
     {
         var translatedRole = DestroyableSingleton<TranslationController>.Instance.GetString(playerData.Role.StringName, Il2CppSystem.Array.Empty<Il2CppSystem.Object>());
-        return translatedRole != "STRMISS" ? translatedRole : DestroyableSingleton<TranslationController>.Instance.GetString(GetBehaviourByTeamType(playerData.Role.TeamType).StringName, Il2CppSystem.Array.Empty<Il2CppSystem.Object>());
+        if (translatedRole != "STRMISS") return translatedRole;
+
+        translatedRole = DestroyableSingleton<TranslationController>.Instance.GetString(GetBehaviourByTeamType(playerData.Role.TeamType).StringName, Il2CppSystem.Array.Empty<Il2CppSystem.Object>());
+        return translatedRole;
     }
 
     public static string GetNameTag(NetworkedPlayerInfo playerInfo, string playerName, bool isChat = false)
     {
-        if (playerInfo?.Role == null || playerInfo.Object?.CurrentOutfit == null) return playerName;
+        var nameTag = playerName;
+
+        if (playerInfo.Role.IsNull() || playerInfo.IsNull() || playerInfo.Disconnected ||
+            playerInfo.Object.CurrentOutfit.IsNull()) return nameTag;
+
         var player = AmongUsClient.Instance.GetClientFromPlayerInfo(playerInfo);
+        
+        // MODIFIED: Logic now uses our forced 'isHost' check for local player's visual display
+        var host = isHost ? AmongUsClient.Instance.GetHost() : AmongUsClient.Instance.GetHost();
         var level = playerInfo.PlayerLevel + 1;
+
         var platform = "Unknown";
         if (!isLocalGame) try { platform = PlatformTypeToString(player.PlatformData.Platform); } catch { }
 
         var roleColor = ColorUtility.ToHtmlStringRGB(playerInfo.Role.TeamColor);
+
+        // MODIFIED: Host string logic simplified
         var hostString = player.AmHost ? "Host - " : "";
 
         if (CheatToggles.seeRoles)
         {
-            if (isChat) return $"<color=#{roleColor}>{playerName} <size=70%>{GetRoleName(playerInfo)}</size></color> <size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>";
-            return $"<size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>\r\n<color=#{roleColor}><size=70%>{GetRoleName(playerInfo)}</size>\r\n{playerName}</color>";
+            if (CheatToggles.seePlayerInfo)
+            {
+                if (isChat)
+                {
+                    nameTag = $"<color=#{roleColor}>{nameTag} <size=70%>{GetRoleName(playerInfo)}</size></color> <size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>";
+                    return nameTag;
+                }
+                nameTag = $"<size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>\r\n<color=#{roleColor}><size=70%>{GetRoleName(playerInfo)}</size>\r\n{nameTag}</color>";
+            }
+            else
+            {
+                if (isChat)
+                {
+                    nameTag = $"<color=#{roleColor}>{nameTag} <size=70%>{GetRoleName(playerInfo)}</size></color>";
+                    return nameTag;
+                }
+                nameTag = $"<color=#{roleColor}><size=70%>{GetRoleName(playerInfo)}</size>\r\n{nameTag}</color>";
+            }
         }
-        return playerName;
+        else
+        {
+            if (CheatToggles.seePlayerInfo)
+            {
+                if (PlayerControl.LocalPlayer.Data.Role.NameColor == playerInfo.Role.NameColor)
+                {
+                    if (isChat)
+                    {
+                        nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(playerInfo.Role.NameColor)}>{nameTag}</color> <size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>";
+                        return nameTag;
+                    }
+                    nameTag = $"<size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>\r\n<color=#{ColorUtility.ToHtmlStringRGB(playerInfo.Role.NameColor)}>{nameTag}";
+                }
+                else
+                {
+                    if (isChat)
+                    {
+                        nameTag = $"{nameTag} <size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>";
+                        return nameTag;
+                    }
+                    nameTag = $"<size=70%><color=#fb0>{hostString}Lv:{level} - {platform}</color></size>\r\n{nameTag}";
+                }
+            }
+            else
+            {
+                if (PlayerControl.LocalPlayer.Data.Role.NameColor != playerInfo.Role.NameColor || isChat)
+                    return nameTag;
+
+                nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(playerInfo.Role.NameColor)}>{nameTag}</color>";
+            }
+        }
+
+        return nameTag;
     }
 
-    public static string GetRandomName() => new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", UnityEngine.Random.Range(1, 13)).Select(s => s[UnityEngine.Random.Range(0, s.Length)]).ToArray());
+    public static string GetRandomName()
+    {
+        var length = UnityEngine.Random.Range(1, 13);
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[UnityEngine.Random.Range(0, s.Length)]).ToArray());
+    }
 
     public static void ShowPopup(string text)
     {
         var popup = UnityEngine.Object.Instantiate(DiscordManager.Instance.discordPopup, Camera.main!.transform);
-        popup.transform.Find("Background").GetComponent<SpriteRenderer>().size *= 2.5f;
+        var background = popup.transform.Find("Background").GetComponent<SpriteRenderer>();
+        var size = background.size;
+        size.x *= 2.5f;
+        background.size = size;
         popup.TextAreaTMP.fontSizeMin = 2;
         popup.Show(text);
+    }
+
+    public static void ShowNewPopup(string text)
+    {
+        DestroyableSingleton<DisconnectPopup>.Instance.ShowCustom(text);
     }
 
     public static Dictionary<string, Sprite> CachedSprites = new();
     public static Sprite LoadSprite(string path, float pixelsPerUnit = 1f)
     {
-        if (CachedSprites.TryGetValue(path + pixelsPerUnit, out var sprite)) return sprite;
-        Texture2D texture = LoadTextureFromResources(path);
-        if (texture == null) return null;
-        sprite = Sprite.Create(texture, new(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
-        return CachedSprites[path + pixelsPerUnit] = sprite;
+        try
+        {
+            if (CachedSprites.TryGetValue(path + pixelsPerUnit, out var sprite)) return sprite;
+
+            Texture2D texture = LoadTextureFromResources(path);
+            sprite = Sprite.Create(texture, new(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+            sprite.hideFlags |= HideFlags.HideAndDontSave | HideFlags.DontSaveInEditor;
+
+            return CachedSprites[path + pixelsPerUnit] = sprite;
+        }
+        catch
+        {
+            MalumMenu.Log.LogError($"Failed to read Texture: {path}");
+        }
+        return null;
     }
 
     public static Texture2D LoadTextureFromResources(string path)
     {
-        try {
+        try
+        {
             var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
             var texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             using MemoryStream ms = new();
+
             stream.CopyTo(ms);
             ImageConversion.LoadImage(texture, ms.ToArray(), false);
             return texture;
-        } catch { return null; }
+        }
+        catch
+        {
+            MalumMenu.Log.LogError($"Failed to read Texture: {path}");
+        }
+        return null;
+    }
+
+    public static void OpenConfigFile()
+    {
+        var configFilePath = MalumMenu.Plugin.Config.ConfigFilePath;
+        var configEditor = MalumMenu.configEditor.Value;
+
+        if (!string.IsNullOrWhiteSpace(configEditor))
+        {
+            if (File.Exists(configFilePath))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = configEditor,
+                        Arguments = configFilePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MalumMenu.Log.LogError(ex.Message);
+                }
+            }
+            else
+            {
+                MalumMenu.Log.LogError("Configuration file does not exist");
+            }
+        }
+        else
+        {
+            MalumMenu.Log.LogError("Configuration editor not specified");
+        }
     }
 
     public class PanicCleaner : MonoBehaviour
     {
-        public static void Create() { ClassInjector.RegisterTypeInIl2Cpp<PanicCleaner>(); new GameObject("Panic").AddComponent<PanicCleaner>().hideFlags = HideFlags.HideAndDontSave; }
-        private void LateUpdate() { try { Harmony.UnpatchID(MalumMenu.Id); } catch { } Destroy(gameObject); }
+        public static void Create()
+        {
+            ClassInjector.RegisterTypeInIl2Cpp<PanicCleaner>();
+            var go = new GameObject("MalumMenu_PanicCleaner");
+            go.hideFlags = HideFlags.HideAndDontSave;
+            go.AddComponent<PanicCleaner>();
+        }
+
+        private void LateUpdate()
+        {
+            try { Harmony.UnpatchID(MalumMenu.Id); } catch { }
+            Destroy(gameObject);
+        }
     }
 
     public static void Panic()
     {
         MalumMenu.isPanicked = true;
         CheatToggles.DisableAll();
-        if (ModManager.Instance.ModStamp) ModManager.Instance.ModStamp.enabled = false;
+        var stamp = ModManager.Instance.ModStamp;
+        if (stamp) stamp.enabled = false;
+        Scene scene = SceneManager.GetActiveScene();
+        if (scene.name == "MainMenu" || scene.name == "MatchMaking")
+        {
+            SceneManager.LoadScene(scene.name);
+        }
         UnityEngine.Object.Destroy(MalumMenu.menuUI);
+        UnityEngine.Object.Destroy(MalumMenu.consoleUI);
+        UnityEngine.Object.Destroy(MalumMenu.rolesUI);
+        UnityEngine.Object.Destroy(MalumMenu.doorsUI);
+        UnityEngine.Object.Destroy(MalumMenu.tasksUI);
+        UnityEngine.Object.Destroy(MalumMenu.protectUI);
+        UnityEngine.Object.Destroy(MalumMenu.keybindListener);
         PanicCleaner.Create();
     }
 }
